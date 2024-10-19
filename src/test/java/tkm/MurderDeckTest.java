@@ -1,3 +1,5 @@
+// created by justin 10/19/2024
+
 import java.util.*;
 
 // Card class to represent suspects, weapons, and rooms
