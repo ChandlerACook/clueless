@@ -2,7 +2,6 @@
 
 import java.util.*;
 
-// Card class to represent suspects, weapons, and rooms
 class Card {
     String name;
     
