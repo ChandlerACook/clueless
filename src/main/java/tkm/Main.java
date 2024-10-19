@@ -1,33 +1,43 @@
 package tkm;
 
-import java.awt.FlowLayout;
-
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-public class Main {
-
-    public static void main(String[] args) {
-
-        JFrame window = new JFrame();
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setLayout(new FlowLayout()); // Main Menu Start
-        window.setResizable(false);
-        window.setTitle("Clue-Less");
-        window.add(new JLabel("Main Menu"));
-        window.add(new JButton("Start Game"));
-        window.add(new JButton("Join Game"));
-        window.add(new JButton("Exit Game")); // Main Menu End
-
-        GamePanel gamePanel = new GamePanel();
-        window.add(gamePanel);
-
-        window.pack();
-
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
+public class Main extends JPanel{
+    
+    private JLabel menu;
+    private JButton hostGame;
+    private JButton joinGame;
+    private JButton exitGame;
+    
+    // Constructor
+    public Main() {
+        this.initComponents();
         
+        this.add(menu);
+        this.add(hostGame);
+        this.add(joinGame);
+        this.add(exitGame);
+    }
+    
+    private void initComponents() {
+        menu = new JLabel("Main Menu");
+        hostGame = new JButton("Host Game");
+        joinGame = new JButton("Join Game");
+        exitGame = new JButton("ExitGame");
+    }
+    
+    public JButton getHostGameButton() {
+        return hostGame;
+    }
+    
+    public JButton getJoinGameButton() {
+        return joinGame;
+    }
+    
+    public JButton getExitGameButton() {
+        return exitGame;
     }
 
 }
