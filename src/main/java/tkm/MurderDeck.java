@@ -1,4 +1,6 @@
 // Created by justin 10/19/2024
+package tkm; 
+
 import java.util.Random;
 
 // MurderDeck class to manage suspects, weapons, and rooms cards
