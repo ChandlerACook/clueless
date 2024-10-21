@@ -1,9 +1,12 @@
 package tkm;
 
-import java.awt.FlowLayout;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -16,6 +19,9 @@ public class App extends JFrame {
     private Main main;
     private GamePanel gamePanel;
     private ChatPanel chatPanel;
+    private PlayerOptionsPanel pOptionsPanel;
+    private JPanel contentPanel;
+    private JPanel optionsPanel;
     private String username;
     private Server gameServer;
     private Client gameClient;
@@ -24,6 +30,9 @@ public class App extends JFrame {
         main = new Main();
         gamePanel = new GamePanel();
         chatPanel = new ChatPanel();
+        pOptionsPanel = new PlayerOptionsPanel();
+        optionsPanel = new JPanel();
+        contentPanel = new JPanel();
         this.initializeComponents();
 
         /*
@@ -51,22 +60,24 @@ public class App extends JFrame {
     
     // Initializes the App Window, and creates the UI.
     private void initializeComponents() {
+        
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        /*
-        TO DO
-        Try borderlayout as a quick fix to make prettier?
-        */
-        this.setLayout(new FlowLayout()); // Main Menu Start
         this.setResizable(false);
         this.setTitle("Clue-Less");
         
-        this.add(main);
-        /*
-        TO DO
-        Add the Game Panel back in
-        */
-        //this.add(gamePanel);
-        this.add(chatPanel);
+        // Setup the options panel
+        optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
+        optionsPanel.add(main);
+        optionsPanel.add(chatPanel);
+        chatPanel.setVisible(false);
+
+        // Setup the content panel
+        contentPanel.setLayout(new BorderLayout(5, 5));
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
+        contentPanel.add(optionsPanel, BorderLayout.WEST);
+        //contentPanel.add(gamePanel, BorderLayout.CENTER);
+        
+        this.add(contentPanel);
         
         this.pack();
         this.setLocationRelativeTo(null);
@@ -86,15 +97,21 @@ public class App extends JFrame {
         /*
         TO DO
         Add check for empty username
+        Way for user to back out of hostgame without making a server
         */
         
-        // Start the host's server on a new Thread
-        gameServer = new Server();
-        new Thread(gameServer).start();
-        
-        // Start the host's client
-        gameClient = new Client("localhost", Server.PORT, username, this);
-        new Thread(gameClient).start();
+        if(username != null) {
+            // Start the host's server on a new Thread
+            gameServer = new Server();
+            new Thread(gameServer).start();
+
+            // Start the host's client
+            gameClient = new Client("localhost", Server.PORT, username, this);
+            new Thread(gameClient).start();
+
+            chatPanel.setVisible(true);
+            this.switchToPOPanel();
+        }
     }
     
     // Join Game Button Action, allows a user to join a host's server, proceed
@@ -126,6 +143,9 @@ public class App extends JFrame {
             // Start player's client
             gameClient = new Client("localhost", Server.PORT, username, this);
             new Thread(gameClient).start(); 
+            
+            chatPanel.setVisible(true);
+            this.switchToPOPanel();
         }
         
         
@@ -147,6 +167,15 @@ public class App extends JFrame {
     // Thread safety, but I do not know if it is necessary in this case
     public void updateChat(String message) {
         SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
+    }
+    
+    // Switches from the main menu panel to the player options panel
+    private void switchToPOPanel() {
+        optionsPanel.remove(main);
+        optionsPanel.add(pOptionsPanel, 0);
+        
+        optionsPanel.revalidate();
+        optionsPanel.repaint();
     }
     
     // Starts up the Clue-Less Application

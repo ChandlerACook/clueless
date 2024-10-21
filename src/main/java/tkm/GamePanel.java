@@ -1,9 +1,12 @@
 package tkm;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-
+import java.awt.Font;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 public class GamePanel extends JPanel{
 
@@ -23,5 +26,17 @@ public class GamePanel extends JPanel{
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground (Color.black);
         this.setDoubleBuffered(true);
+        
+        
+        /*
+        TEMPORARY for Presentation
+        */
+        this.setLayout(new BorderLayout());
+        JLabel titleLabel = new JLabel("Clue-Less");
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 60));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        this.add(titleLabel, BorderLayout.CENTER);
+        
     }
 }

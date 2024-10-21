@@ -65,6 +65,8 @@ public class Client implements Runnable{
         } finally {
             /*
             Ensures all sockets and streans close
+            TO DO
+            Add a check to see if they exist != null
             */
             try {
                 socket.close();

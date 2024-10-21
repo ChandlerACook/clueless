@@ -1,7 +1,10 @@
 
 package tkm;
 
+import java.awt.GridLayout;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -24,19 +27,23 @@ public class ChatPanel extends JPanel{
     
     public ChatPanel() {
         this.initComponents();
+        this.setLayout(new GridLayout(0, 1, 5, 5));
         this.add(chatScrollPane);
-        this.add(chatInput);
-        this.add(send);
+        
+        JPanel sendPanel = new JPanel();
+        
+        sendPanel.add(chatInput);
+        sendPanel.add(send);
+        this.add(sendPanel);
     }
     
     // initialize panel components
     private void initComponents() {
-        chatArea = new JTextArea(20, 20);
+        chatArea = new JTextArea(5, 10);
         chatArea.setEditable(false);        // So users cant edit the chatbox
         chatScrollPane = new JScrollPane(chatArea);
-        
+        chatScrollPane.setBorder(BorderFactory.createTitledBorder("Chat"));
         chatInput = new JTextField(25);
-        
         send = new JButton("Send");
     }
     
