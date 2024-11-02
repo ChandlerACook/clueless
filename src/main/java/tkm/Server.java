@@ -1,5 +1,5 @@
 
-package tkm;
+package tkm.clientserver;
 
 import java.io.IOException;
 import java.net.ServerSocket;

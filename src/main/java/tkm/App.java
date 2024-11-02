@@ -1,5 +1,11 @@
 package tkm;
 
+import tkm.clientserver.Client;
+import tkm.clientserver.Server;
+import tkm.ui.ChatPanel;
+import tkm.ui.GamePanel;
+import tkm.ui.PlayerOptionsPanel;
+import tkm.ui.Main;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -75,7 +81,7 @@ public class App extends JFrame {
         contentPanel.setLayout(new BorderLayout(5, 5));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
         contentPanel.add(optionsPanel, BorderLayout.WEST);
-        //contentPanel.add(gamePanel, BorderLayout.CENTER);
+        contentPanel.add(gamePanel, BorderLayout.CENTER);
         
         this.add(contentPanel);
         

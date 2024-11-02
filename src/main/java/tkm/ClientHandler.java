@@ -1,5 +1,5 @@
 
-package tkm;
+package tkm.clientserver;
 
 import java.io.BufferedReader;
 import java.io.IOException;
