@@ -38,4 +38,15 @@ public class PlayerOptionsPanel extends JPanel {
         accuse = new JButton("Make Accusation");
     }
     
+    public JButton getMoveButton() {
+        return move;
+    }
+    
+    public JButton getSuggestButton() {
+        return suggest;
+    }
+    
+    public JButton getAccusationButton() {
+        return accuse;
+    }
 }
