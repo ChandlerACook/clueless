@@ -46,7 +46,7 @@ public class MakeAccusation {
                     + suspect.getName() + " used the " + weapon.getName()
                     + " in the " + room.getName() + ".";
         } else {
-            message = player.getName() + " made an incorrect accusation. Try again!";
+            message = player.getName() + " made an incorrect accusation. They are eliminated!";
         }
 
         JOptionPane.showMessageDialog(null, message, "Accusation Result", JOptionPane.INFORMATION_MESSAGE);
