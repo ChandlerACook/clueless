@@ -25,14 +25,14 @@ public class Client implements Runnable{
     private BufferedReader incoming;    // getting updates from the server
     private PrintWriter outgoing;       // writing messages to the server
     // Possibly bad design to pass in the whole app class, maybe just chatArea?
-    private App app;                    // Reference to game so client can update
+    private Main main;                    // Reference to game so client can update
     
     // Constructor, creates a socket, and connects to the server
-    public Client(String serverAddress, int port, String username, App app) {
+    public Client(String serverAddress, int port, String username, Main main) {
         this.serverAddress = serverAddress;
         this.port = port;
         //this.username = username;
-        this.app = app;
+        this.main = main;
         
         // Try to connect to the server, and create input/output streams
         try {
@@ -57,7 +57,7 @@ public class Client implements Runnable{
             String response;
             while((response = incoming.readLine()) != null) {
                 // Update the chatArea if an update comes from the server
-                app.updateChat(response);           
+                main.updateChat(response);           
             }
         } catch(IOException e) {
             System.out.println("Error communicating with server: " 
@@ -65,6 +65,8 @@ public class Client implements Runnable{
         } finally {
             /*
             Ensures all sockets and streans close
+            TO DO
+            Add a check to see if they exist != null
             */
             try {
                 socket.close();

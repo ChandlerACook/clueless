@@ -1,8 +1,11 @@
 package tkm;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 public class MainMenu extends JPanel{
     
@@ -15,7 +18,12 @@ public class MainMenu extends JPanel{
     public MainMenu() {
         this.initComponents();
         
-        this.add(menu);
+        this.setLayout(new GridLayout(0, 1, 5, 5));
+        
+        JPanel menuLabelPanel = new JPanel(new BorderLayout());
+        menuLabelPanel.add(menu, BorderLayout.CENTER);
+        
+        this.add(menuLabelPanel);
         this.add(hostGame);
         this.add(joinGame);
         this.add(exitGame);
@@ -23,6 +31,8 @@ public class MainMenu extends JPanel{
     
     private void initComponents() {
         menu = new JLabel("Main Menu");
+        menu.setHorizontalAlignment(SwingConstants.CENTER);
+        menu.setVerticalAlignment(SwingConstants.CENTER);
         hostGame = new JButton("Host Game");
         joinGame = new JButton("Join Game");
         exitGame = new JButton("ExitGame");
