@@ -1,78 +1,33 @@
-// Created by justin 10/19/2024
-package tkm; 
+package tkm;
 
-import java.util.Random;
+/**
+ * MurderDeck class holds the solution deck that 
+ * consists of the correct suspect, weapon, and room.
+ * Created by justin 10/19/2024
+ */
 
-// MurderDeck class to manage suspects, weapons, and rooms cards
 public class MurderDeck {
-    // arrays for suspects, weapons, and rooms
-    private static final Card[] SUSPECTS = {
-        new Card("Miss Scarlet"), 
-        new Card("Professor Plum"), 
-        new Card("Colonel Mustard"), 
-        new Card("Mrs. White"), 
-        new Card("Mr. Green"), 
-        new Card("Mrs. Peacock")
-    };
+    private Card correctSuspect;
+    private Card correctWeapon;
+    private Card correctRoom;
 
-    private static final Card[] WEAPONS = {
-        new Card("Candlestick"), 
-        new Card("Dagger"), 
-        new Card("Lead Pipe"), 
-        new Card("Revolver"), 
-        new Card("Rope"), 
-        new Card("Wrench")
-    };
-
-    private static final Card[] ROOMS = {
-        new Card("Kitchen"), 
-        new Card("Ballroom"), 
-        new Card("Conservatory"), 
-        new Card("Dining Room"), 
-        new Card("Lounge"), 
-        new Card("Hall"), 
-        new Card("Study"), 
-        new Card("Library"), 
-        new Card("Billiard Room")
-    };
-
-    // final solution cards
-    private final Card correctSuspect;
-    private final Card correctWeapon;
-    private final Card correctRoom;
-
-    // randomized solution cards
     public MurderDeck() {
-        Random random = new Random();
-        correctSuspect = SUSPECTS[random.nextInt(SUSPECTS.length)];
-        correctWeapon = WEAPONS[random.nextInt(WEAPONS.length)];
-        correctRoom = ROOMS[random.nextInt(ROOMS.length)];
+        // Mock solution for now
+        correctSuspect = new Card("Mr. Green");
+        correctWeapon = new Card("Revolver");
+        correctRoom = new Card("Library");
     }
 
-    // check if the player accusation is correct
     public boolean checkAccusation(Card suspect, Card weapon, Card room) {
-        return correctSuspect == suspect && correctWeapon == weapon && correctRoom == room;
+        return suspect.getName().equals(correctSuspect.getName()) &&
+                weapon.getName().equals(correctWeapon.getName()) &&
+                room.getName().equals(correctRoom.getName());
     }
 
-    // TESTING
-    public String gameSolution() {
-        return correctSuspect.getName() + " in the " + correctRoom.getName() + " with the " + correctWeapon.getName();
-    }
-
-    // TESTING
-    public static void main(String[] args) {
-        // create new murderdeck
-        MurderDeck murderDeck = new MurderDeck();
-
-        
-        System.out.println("Solution: " + murderDeck.gameSolution());
-
-        // TESTING (check accusation)
-        Card accusedSuspect = new Card("Miss Scarlet");
-        Card accusedWeapon = new Card("Revolver");
-        Card accusedRoom = new Card("Kitchen");
-
-        boolean isCorrect = murderDeck.checkAccusation(accusedSuspect, accusedWeapon, accusedRoom);
-        System.out.println("Accusation correct? " + isCorrect);
+    public boolean checkSuggestion(Card suspect, Card weapon, Card room) {
+        // Suggestion check logic
+        return suspect.getName().equals(correctSuspect.getName()) ||
+                weapon.getName().equals(correctWeapon.getName()) ||
+                room.getName().equals(correctRoom.getName());
     }
 }
