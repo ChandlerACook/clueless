@@ -1,5 +1,12 @@
 package tkm;
 
+import javax.swing.JOptionPane;
+
+/**
+ * makeAccusation class holds logic behind making accusations.
+ * created by justin - edit 11/8/2024 includes display
+ */
+
 public class MakeAccusation {
 
     private Player player;
@@ -8,22 +15,51 @@ public class MakeAccusation {
     private Card room;
 
     public MakeAccusation(Player player, Card suspect, Card weapon, Card room) {
-        // assigns the accusing player and their accusations
         this.player = player;
         this.suspect = suspect;
         this.weapon = weapon;
         this.room = room;
     }
 
-    // accusation logic
-    public boolean performAccusation(MurderDeck deck) {
-        // basically check if the accusation matches the murder deck solution
-        boolean result = deck.checkAccusation(suspect, weapon, room);
-        if (result) {
-            System.out.println(player.getName() + " made a correct accusation!");
+    public Player getPlayer() {
+        return player;
+    }
+
+    public Card getSuspect() {
+        return suspect;
+    }
+
+    public Card getWeapon() {
+        return weapon;
+    }
+
+    public Card getRoom() {
+        return room;
+    }
+
+    // Displays the result of the accusation.
+    private void displayAccusation(boolean isCorrect) {
+        String message;
+
+        if (isCorrect) {
+            message = player.getName() + " made a correct accusation! "
+                    + suspect.getName() + " used the " + weapon.getName()
+                    + " in the " + room.getName() + ".";
         } else {
-            System.out.println(player.getName() + " made an incorrect accusation.");
+            message = player.getName() + " made an incorrect accusation. Try again!";
         }
-        return result;
+
+        JOptionPane.showMessageDialog(null, message, "Accusation Result", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // Performs the accusation logic and displays the result.
+    public boolean performAccusation(MurderDeck deck) {
+        // Check if the accusation matches the solution in the murder deck
+        boolean isCorrect = deck.checkAccusation(suspect, weapon, room);
+
+        // Display the result of the accusation
+        displayAccusation(isCorrect);
+
+        return isCorrect;
     }
 }
