@@ -1,5 +1,12 @@
 package tkm;
 
+import javax.swing.JOptionPane;
+
+/**
+ * makeSuggestion class holds logic behind making suggestions.
+ * created by justin - edit 11/8/2024 includes display
+ */
+
 public class MakeSuggestion {
     private Player player;
     private Card suspect;
@@ -20,5 +27,15 @@ public class MakeSuggestion {
         System.out.println(player.getName() + " suggests that it was " + 
                            suspect.getName() + " with the " + weapon.getName() + 
                            " in the " + room.getName());
+        displaySuggestion();
+    }
+    // display the suggestion in a dialog box
+    public void displaySuggestion() {
+        String message = player.getName() + " suggested that "
+                + suspect.getName() + " used the "
+                + weapon.getName() + " in the "
+                + room.getName() + ".";
+
+        JOptionPane.showMessageDialog(null, message, "Suggestion Result", JOptionPane.INFORMATION_MESSAGE);
     }
 }
