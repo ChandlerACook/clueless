@@ -1,5 +1,11 @@
 package tkm;
 
+import tkm.clientserver.Client;
+import tkm.clientserver.Server;
+import tkm.ui.ChatPanel;
+import tkm.ui.GamePanel;
+import tkm.ui.PlayerOptionsPanel;
+import tkm.ui.MainMenu;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -16,7 +22,7 @@ import javax.swing.SwingUtilities;
  */
 public class Main extends JFrame {
     
-    private MainMenu main;
+    private MainMenu mainMenu;
     private GamePanel gamePanel;
     private ChatPanel chatPanel;
     private PlayerOptionsPanel pOptionsPanel;
@@ -27,7 +33,7 @@ public class Main extends JFrame {
     private Client gameClient;
     
     public Main() {
-        main = new MainMenu();
+        mainMenu = new MainMenu();
         gamePanel = new GamePanel();
         chatPanel = new ChatPanel();
         pOptionsPanel = new PlayerOptionsPanel();
@@ -41,15 +47,15 @@ public class Main extends JFrame {
         * the UI stuff protected instead of private to enable access.
         */
         
-        main.getExitGameButton().addActionListener((ActionEvent e) -> {
+        mainMenu.getExitGameButton().addActionListener((ActionEvent e) -> {
             this.exit(e);
         });
         
-        main.getHostGameButton().addActionListener((ActionEvent e) -> {
+        mainMenu.getHostGameButton().addActionListener((ActionEvent e) -> {
             this.hostGame(e);
         });
         
-        main.getJoinGameButton().addActionListener((ActionEvent e) -> {
+        mainMenu.getJoinGameButton().addActionListener((ActionEvent e) -> {
             this.joinGame(e);
         });
         
@@ -67,7 +73,7 @@ public class Main extends JFrame {
         
         // Setup the options panel
         optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
-        optionsPanel.add(main);
+        optionsPanel.add(mainMenu);
         optionsPanel.add(chatPanel);
         chatPanel.setVisible(false);
 
@@ -75,7 +81,7 @@ public class Main extends JFrame {
         contentPanel.setLayout(new BorderLayout(5, 5));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
         contentPanel.add(optionsPanel, BorderLayout.WEST);
-        //contentPanel.add(gamePanel, BorderLayout.CENTER);
+        contentPanel.add(gamePanel, BorderLayout.CENTER);
         
         this.add(contentPanel);
         
@@ -171,7 +177,7 @@ public class Main extends JFrame {
     
     // Switches from the main menu panel to the player options panel
     private void switchToPOPanel() {
-        optionsPanel.remove(main);
+        optionsPanel.remove(mainMenu);
         optionsPanel.add(pOptionsPanel, 0);
         
         optionsPanel.revalidate();

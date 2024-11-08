@@ -1,10 +1,9 @@
 
-package tkm;
+package tkm.ui;
 
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -39,7 +38,7 @@ public class ChatPanel extends JPanel{
     
     // initialize panel components
     private void initComponents() {
-        chatArea = new JTextArea(5, 10);
+        chatArea = new JTextArea();
         chatArea.setEditable(false);        // So users cant edit the chatbox
         chatScrollPane = new JScrollPane(chatArea);
         chatScrollPane.setBorder(BorderFactory.createTitledBorder("Chat"));

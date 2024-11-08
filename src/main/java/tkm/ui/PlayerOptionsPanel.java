@@ -1,5 +1,5 @@
 
-package tkm;
+package tkm.ui;
 
 import java.awt.GridLayout;
 import javax.swing.JButton;
