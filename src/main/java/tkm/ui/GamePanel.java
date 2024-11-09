@@ -2,16 +2,11 @@ package tkm.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.Map;
+import java.awt.Font;
+import java.awt.Graphics;
 import javax.swing.JPanel;
+import tkm.enums.TileType;
 import tkm.gamelogic.GameBoard;
-import tkm.gamelogic.Hallway;
-import tkm.gamelogic.Location;
-import tkm.gamelogic.Room;
-import tkm.gamelogic.StartingSquare;
 
 /**
  * @file GamePanel.java
@@ -26,16 +21,17 @@ import tkm.gamelogic.StartingSquare;
 public class GamePanel extends JPanel{
 
     // SCREEN SETTINGS
-    final private int originalTileSize = 16; // 16x16 tile
+    final private int originalTileSize = 10; // 16x16 tile
     final private int scale = 3;  // scale up * 3
 
     final private int tileSize = originalTileSize * scale; // 48x48 tile
-    final private int maxScreenCol = 16;
-    final private int maxScreenRow = 12;
+    final private int maxScreenCol = 20;
+    final private int maxScreenRow = 20;
     final private int screenWidth = tileSize * maxScreenCol; // 768 pixels
     final private int screenHeight = tileSize * maxScreenRow; // 576 pixels
     
-    private final GameBoard gameBoard;
+    private GameBoard gameBoard;
+    
     //private final Map<Point, Component> roomMap;
     
     /**
@@ -64,73 +60,57 @@ public class GamePanel extends JPanel{
 
         //roomMap = new HashMap<>();
 
+        //this.gameBoard = gameBoard;
         gameBoard = new GameBoard();
-        this.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH; // Fill both horizontal and vertical space
-        gbc.weightx = 1.0; // Give equal weight for horizontal resizing
-        gbc.weighty = 1.0; // Give equal weight for vertical resizing
-        gbc.insets = new Insets(5, 5, 5, 5); // Optional padding between components
-
-        Map<String, Location> locations = gameBoard.getLocations();
         
-        // Add rooms to the panel
-        gbc.gridx = 1; gbc.gridy = 1;
-        this.add(new RoomPanel((Room) locations.get("Study")), gbc);
-        gbc.gridx = 3; gbc.gridy = 1;
-        this.add(new RoomPanel((Room) locations.get("Hall")), gbc);
-        gbc.gridx = 5; gbc.gridy = 1;
-        this.add(new RoomPanel((Room) locations.get("Lounge")), gbc);
-        
-        gbc.gridx = 1; gbc.gridy = 3;
-        this.add(new RoomPanel((Room) locations.get("Library")), gbc);
-        gbc.gridx = 3; gbc.gridy = 3;
-        this.add(new RoomPanel((Room) locations.get("Billiard Room")), gbc);
-        gbc.gridx = 5; gbc.gridy = 3;
-        this.add(new RoomPanel((Room) locations.get("Dining Room")), gbc);
-        
-        gbc.gridx = 1; gbc.gridy = 5;
-        this.add(new RoomPanel((Room) locations.get("Conservatory")), gbc);
-        gbc.gridx = 3; gbc.gridy = 5;
-        this.add(new RoomPanel((Room) locations.get("Ballroom")), gbc);
-        gbc.gridx = 5; gbc.gridy = 5;
-        this.add(new RoomPanel((Room) locations.get("Kitchen")), gbc);
-        
-        // Add hallways to the panel
-        gbc.gridx = 2; gbc.gridy = 1;
-        this.add(new RoomPanel((Hallway) locations.get("Hall-Study")), gbc);
-        gbc.gridx = 3; gbc.gridy = 2;
-        this.add(new RoomPanel((Hallway) locations.get("Hall-Billiard")), gbc);
-        gbc.gridx = 4; gbc.gridy = 1;
-        this.add(new RoomPanel((Hallway) locations.get("Hall-Lounge"), 
-                (StartingSquare)locations.get("Miss Scarlet Starting Square")), gbc);
-        
-        gbc.gridx = 1; gbc.gridy = 2;
-        this.add(new RoomPanel((Hallway) locations.get("Library-Study"),
-                (StartingSquare)locations.get("Professor Plum Starting Square")), gbc);
-        gbc.gridx = 2; gbc.gridy = 3;
-        this.add(new RoomPanel((Hallway) locations.get("Library-Billiard")), gbc);
-        gbc.gridx = 1; gbc.gridy = 4;
-        this.add(new RoomPanel((Hallway) locations.get("Library-Conservatory"),
-                (StartingSquare)locations.get("Mrs. Peacock Starting Square")), gbc);
-        
-        gbc.gridx = 5; gbc.gridy = 2;
-        this.add(new RoomPanel((Hallway) locations.get("Dining-Lounge"),
-                (StartingSquare)locations.get("Kernel Mustard Starting Square")), gbc);
-        gbc.gridx = 4; gbc.gridy = 3;
-        this.add(new RoomPanel((Hallway) locations.get("Dining-Billiard")), gbc);
-        gbc.gridx = 5; gbc.gridy = 4;
-        this.add(new RoomPanel((Hallway) locations.get("Dining-Kitchen")), gbc);
-        
-        gbc.gridx = 2; gbc.gridy = 5;
-        this.add(new RoomPanel((Hallway) locations.get("Ballroom-Conservatory"),
-                (StartingSquare)locations.get("Mr. Green Starting Square")), gbc);
-        gbc.gridx = 3; gbc.gridy = 4;
-        this.add(new RoomPanel((Hallway) locations.get("Ballroom-Billiard")), gbc);
-        gbc.gridx = 4; gbc.gridy = 5;
-        this.add(new RoomPanel((Hallway) locations.get("Ballroom-Kitchen"),
-                (StartingSquare)locations.get("Mrs. White Starting Square")), gbc);
-
     } //end of Constructor
+    
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        
+        int[][] tileMap = gameBoard.getTileMap();
+        
+        for (int i = 0; i < tileMap.length; i++) {
+            for (int j = 0; j < tileMap[i].length; j++) {
+                int tile = tileMap[i][j];
+                
+                switch (tile) {
+                    case 0 -> {
+                        g.setColor(TileType.BLANK.getColor());
+                    }
+                    case 2 -> {
+                        g.setColor(TileType.STARTING_SQUARE.getColor());
+                    }
+                    case 1, 3, 4, 5, 6, 7, 8, 9, 10, 11 -> {
+                        g.setColor(TileType.STUDY.getColor());
+                    }
+                    default -> System.out.println("There was a problem drawing the tile map.");
+                }
+                
+                // Draw the tile
+                g.fillRect(j * tileSize, i * tileSize, tileSize, tileSize);
+                g.setColor(Color.BLACK);
+                g.drawRect(j * tileSize, i * tileSize, tileSize, tileSize);
+            }
+        }
+        
+        this.drawRoomLabels(g);
+    }
+    
+    // Helper method to draw labels of each room
+    private void drawRoomLabels(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 14));
+        g.drawString("Study", 30, 20);     // Adjust coordinates to place above Study
+        g.drawString("Hall", 250, 20);
+        g.drawString("Lounge", 450, 20);
+        g.drawString("Library", 30, 230);
+        g.drawString("Billiard Room", 200, 230);
+        g.drawString("Dining Room", 410, 230);
+        g.drawString("Conservatory", 30, 590);
+        g.drawString("Ballroom", 250, 590);
+        g.drawString("Kitchen", 450, 590);
+    }
     
 }
