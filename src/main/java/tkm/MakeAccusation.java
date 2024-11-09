@@ -5,6 +5,7 @@ import javax.swing.JOptionPane;
 /**
  * makeAccusation class holds logic behind making accusations.
  * created by justin - edit 11/8/2024 includes display
+ * MERGED WITH GameBoard - 11/9/2024 justin
  */
 
 public class MakeAccusation {
