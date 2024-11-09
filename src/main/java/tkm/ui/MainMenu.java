@@ -35,7 +35,7 @@ public class MainMenu extends JPanel{
         menu.setVerticalAlignment(SwingConstants.CENTER);
         hostGame = new JButton("Host Game");
         joinGame = new JButton("Join Game");
-        exitGame = new JButton("Exit Game");
+        exitGame = new JButton("ExitGame");
     }
     
     public JButton getHostGameButton() {

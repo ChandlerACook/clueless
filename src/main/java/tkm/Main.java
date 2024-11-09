@@ -1,20 +1,17 @@
 package tkm;
-//import tkm.clientserver.*;
+
+import tkm.gamelogic.Card;
+import tkm.gamelogic.Player;
 import tkm.clientserver.Client;
 import tkm.clientserver.Server;
-//import tkm.ui.*;
 import tkm.ui.ChatPanel;
 import tkm.ui.GamePanel;
 import tkm.ui.PlayerOptionsPanel;
 import tkm.ui.MainMenu;
-import tkm.ui.CardPanel;
-//import tkm.enums.*;
 import tkm.enums.CharacterType;
 import tkm.enums.WeaponType;
 import tkm.enums.RoomType;
-//
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,9 +49,6 @@ public class Main extends JFrame {
     private MurderDeck murderDeck;
     private Player currentPlayer;
 
-    private CardPanel cardPanel;
-  
-
     public Main() {
         mainMenu = new MainMenu();
         gamePanel = new GamePanel();
@@ -62,7 +56,6 @@ public class Main extends JFrame {
         pOptionsPanel = new PlayerOptionsPanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
-        cardPanel = new CardPanel();
         this.initializeComponents();
 
         // Initialize game components
@@ -106,21 +99,13 @@ public class Main extends JFrame {
         optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
         optionsPanel.add(mainMenu);
         optionsPanel.add(chatPanel);
-        
         chatPanel.setVisible(false);
-        
 
         // Setup the content panel
         contentPanel.setLayout(new BorderLayout(5, 5));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
-
         contentPanel.add(optionsPanel, BorderLayout.WEST);
         contentPanel.add(gamePanel, BorderLayout.CENTER);
-       
-
-     
-
-
 
         this.add(contentPanel);
 
@@ -218,12 +203,9 @@ public class Main extends JFrame {
     private void switchToPOPanel() {
         optionsPanel.remove(mainMenu);
         optionsPanel.add(pOptionsPanel, 0);
-        optionsPanel.add(cardPanel);
-        cardPanel.setBackground(Color.CYAN);
 
         optionsPanel.revalidate();
         optionsPanel.repaint();
-
     }
 
     private void setupEventListeners() {
@@ -279,9 +261,9 @@ public class Main extends JFrame {
                 String roomName = (String) roomList.getSelectedItem();
 
                 // Create suggestion cards
-                Card suspect = new Card(suspectName);
-                Card weapon = new Card(weaponName);
-                Card room = new Card(roomName);
+                Card suspect = new Card(suspectName, 1);
+                Card weapon = new Card(weaponName, 2);
+                Card room = new Card(roomName, 3);
 
                 // Make the suggestion and display the result
                 MakeSuggestion suggestion = new MakeSuggestion(currentPlayer, suspect, weapon, room);
@@ -327,9 +309,9 @@ public class Main extends JFrame {
                 String roomName = (String) roomList.getSelectedItem();
 
                 // Create accusation cards
-                Card suspect = new Card(suspectName);
-                Card weapon = new Card(weaponName);
-                Card room = new Card(roomName);
+                Card suspect = new Card(suspectName, 1);
+                Card weapon = new Card(weaponName, 2);
+                Card room = new Card(roomName, 3);
 
                 // Make the accusation and display the result
                 MakeAccusation accusation = new MakeAccusation(currentPlayer, suspect, weapon, room);

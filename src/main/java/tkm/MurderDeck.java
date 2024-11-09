@@ -1,5 +1,7 @@
 package tkm;
 
+import tkm.gamelogic.Card;
+
 /**
  * MurderDeck class holds the solution deck that 
  * consists of the correct suspect, weapon, and room.
@@ -13,9 +15,9 @@ public class MurderDeck {
 
     public MurderDeck() {
         // Mock solution for now
-        correctSuspect = new Card("Mr. Green");
-        correctWeapon = new Card("Revolver");
-        correctRoom = new Card("Library");
+        correctSuspect = new Card("Mr. Green", 1);
+        correctWeapon = new Card("Revolver", 2);
+        correctRoom = new Card("Library", 3);
     }
 
     public boolean checkAccusation(Card suspect, Card weapon, Card room) {
