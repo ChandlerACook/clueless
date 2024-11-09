@@ -1,23 +1,17 @@
 // created by justin 10/19/2024
-package tkm.gamelogic;
+package tkm;
 
 // game cards
 public class Card {
-    private int type;
     private String name;
 
     // initialize the card name
-    public Card(String name, int type) {
+    public Card(String name) {
         this.name = name;
-        this.type = type;
     }
 
     public String getName() {
         return name;
-    }
-    
-    public int getType() {
-        return type;
     }
 }
 
