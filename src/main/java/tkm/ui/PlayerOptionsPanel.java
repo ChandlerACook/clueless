@@ -21,7 +21,8 @@ public class PlayerOptionsPanel extends JPanel {
     private JButton move;
     private JButton suggest;
     private JButton accuse;
-    
+    private JButton reveal;
+
     public PlayerOptionsPanel() {
         this.initComponents();
         
@@ -30,12 +31,14 @@ public class PlayerOptionsPanel extends JPanel {
         this.add(move);
         this.add(suggest);
         this.add(accuse);
+        this.add(reveal);
     }
     
     private void initComponents() {
         move = new JButton("Move Character");
         suggest = new JButton("Make a Suggestion");
         accuse = new JButton("Make Accusation");
+        reveal = new JButton("Disprove Suggestion");
     }
     
     public JButton getMoveButton() {
@@ -48,5 +51,9 @@ public class PlayerOptionsPanel extends JPanel {
     
     public JButton getAccusationButton() {
         return accuse;
+    }
+
+    public JButton getReveal() {
+        return reveal;
     }
 }
