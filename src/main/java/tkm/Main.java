@@ -1,18 +1,8 @@
 package tkm;
-//import tkm.clientserver.*;
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-//import tkm.ui.*;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.PlayerOptionsPanel;
-import tkm.ui.MainMenu;
-import tkm.ui.CardPanel;
-//import tkm.enums.*;
-import tkm.enums.CharacterType;
-import tkm.enums.WeaponType;
-import tkm.enums.RoomType;
-//
+import tkm.clientserver.*;
+import tkm.ui.*;
+import tkm.enums.*;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -44,19 +34,23 @@ public class Main extends JFrame {
     private GamePanel gamePanel;
     private ChatPanel chatPanel;
     private PlayerOptionsPanel pOptionsPanel;
+    private Lobby lobby;
+    private CardPanel cardPanel;
     private JPanel contentPanel;
     private JPanel optionsPanel;
+
     private String username;
     private Server gameServer;
     private Client gameClient;
+
     private MurderDeck murderDeck;
     private Player currentPlayer;
-
-    private CardPanel cardPanel;
+    
   
 
     public Main() {
         mainMenu = new MainMenu();
+        lobby = new Lobby();
         gamePanel = new GamePanel();
         chatPanel = new ChatPanel();
         pOptionsPanel = new PlayerOptionsPanel();
@@ -87,6 +81,10 @@ public class Main extends JFrame {
             this.joinGame(e);
         });
 
+        lobby.getStartGame().addActionListener((ActionEvent e) -> {
+            this.startGame(e);
+        });
+
         chatPanel.getSendButton().addActionListener((ActionEvent e) -> {
             this.send(e);
         });
@@ -106,10 +104,11 @@ public class Main extends JFrame {
         optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
         optionsPanel.add(mainMenu);
         optionsPanel.add(chatPanel);
+        optionsPanel.add(lobby);
         
         chatPanel.setVisible(false);
-        
-
+        lobby.setVisible(false);
+    
         // Setup the content panel
         contentPanel.setLayout(new BorderLayout(5, 5));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
@@ -117,15 +116,12 @@ public class Main extends JFrame {
         contentPanel.add(optionsPanel, BorderLayout.WEST);
         contentPanel.add(gamePanel, BorderLayout.CENTER);
        
-
-     
-
-
-
         this.add(contentPanel);
 
         this.pack();
         this.setLocationRelativeTo(null);
+
+        
     }
 
     // Exit Button Action, exits from application
@@ -133,6 +129,11 @@ public class Main extends JFrame {
         System.exit(0);
     }
 
+    private void startGame(ActionEvent e) {
+
+        this.switchToPOPanel();
+
+    }
     // Host Game Button Action, sets up a server and a client for the host, and
     // should proceed to the game lobby or panel.
     private void hostGame(ActionEvent e) {
@@ -155,7 +156,7 @@ public class Main extends JFrame {
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
-            this.switchToPOPanel();
+            this.switchToLobbyPanel();
         }
     }
 
@@ -190,7 +191,8 @@ public class Main extends JFrame {
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
-            this.switchToPOPanel();
+            
+            this.switchToLobbyPanel();
         }
 
 
@@ -214,9 +216,17 @@ public class Main extends JFrame {
         SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
     }
 
+    private void switchToLobbyPanel() {
+        optionsPanel.remove(mainMenu);
+        optionsPanel.add(lobby, 0);
+        lobby.setVisible(true);
+        optionsPanel.revalidate();
+        optionsPanel.repaint();
+    }
+
     // Switches from the main menu panel to the player options panel
     private void switchToPOPanel() {
-        optionsPanel.remove(mainMenu);
+        optionsPanel.remove(lobby);
         optionsPanel.add(pOptionsPanel, 0);
         optionsPanel.add(cardPanel);
         cardPanel.setBackground(Color.CYAN);
@@ -337,6 +347,10 @@ public class Main extends JFrame {
             }
         }
     }
+
+
+
+
 
     // Starts up the Clue-Less Application
     public static void main( String[] args )

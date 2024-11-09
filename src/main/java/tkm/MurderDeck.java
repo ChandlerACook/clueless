@@ -1,5 +1,7 @@
 package tkm;
 
+import tkm.ui.Card;
+
 /**
  * MurderDeck class holds the solution deck that 
  * consists of the correct suspect, weapon, and room.

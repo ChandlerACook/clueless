@@ -2,6 +2,8 @@ package tkm;
 
 import javax.swing.JOptionPane;
 
+import tkm.ui.Card;
+
 /**
  * makeSuggestion class holds logic behind making suggestions.
  * created by justin - edit 11/8/2024 includes display
