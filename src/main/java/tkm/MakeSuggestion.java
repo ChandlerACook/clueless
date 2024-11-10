@@ -4,7 +4,7 @@ import tkm.gamelogic.Card;
 import tkm.gamelogic.Player;
 import javax.swing.JOptionPane;
 
-import tkm.ui.Card;
+//import tkm.ui.Card;
 
 /**
  * makeSuggestion class holds logic behind making suggestions.

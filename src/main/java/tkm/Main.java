@@ -2,7 +2,13 @@ package tkm;
 import tkm.clientserver.*;
 import tkm.ui.*;
 import tkm.enums.*;
-import tkm.gamelogic.*;
+import tkm.gamelogic.GameBoard;
+import tkm.gamelogic.GamePiece;
+import tkm.gamelogic.Player;
+import tkm.gamelogic.Card;
+import tkm.MakeAccusation;
+import tkm.MakeSuggestion;
+import tkm.MurderDeck;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
