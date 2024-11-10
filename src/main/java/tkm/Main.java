@@ -197,7 +197,7 @@ public class Main extends JFrame {
     //}
 
     private void joinGame(ActionEvent e) {
-        String ipAddress = JOptionPane.showInputDialog("IP Address:");
+        String ipAddress = JOptionPane.showInputDialog(this, "IP Address:");
         username = JOptionPane.showInputDialog(this, "Enter your username:");
 
         if(ipAddress != null && username != null) {

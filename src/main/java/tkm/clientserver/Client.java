@@ -26,8 +26,8 @@ public class Client implements Runnable{
     private Socket clientSocket;
     private BufferedReader incoming;    // getting updates from the server
     private PrintWriter outgoing;       // writing messages to the server
-    // Possibly bad design to pass in the whole app class, maybe just chatArea?
-    private Main main;                    // Reference to game so client can update
+                                        // Possibly bad design to pass in the whole app class, maybe just chatArea?
+    private Main main;                  // Reference to game so client can update
     
     // Constructor, creates a socket, and connects to the server
     public Client(String serverAddress, int port, String username, Main main) {
