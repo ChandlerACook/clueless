@@ -5,9 +5,11 @@ import tkm.clientserver.Server;
 //import tkm.ui.*;
 import tkm.ui.ChatPanel;
 import tkm.ui.GamePanel;
+import tkm.ui.Lobby;
 import tkm.ui.PlayerOptionsPanel;
 import tkm.ui.MainMenu;
 import tkm.ui.CardPanel;
+import tkm.ui.Lobby;
 //import tkm.enums.*;
 import tkm.enums.CharacterType;
 import tkm.enums.WeaponType;
@@ -27,17 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-/**
- * App class serves as the main controller for the game by
- * initializing all necessary components, setting up the UI,
- * and handling key game actions through event listeners.
- */
-
-/**
- * 11/8/2024 verison - justin
- * integration of making suggestions/accusations
- */
-
 public class Main extends JFrame {
 
     private MainMenu mainMenu;
@@ -51,14 +42,15 @@ public class Main extends JFrame {
     private Client gameClient;
     private MurderDeck murderDeck;
     private Player currentPlayer;
-
+    private Lobby lobby;
     private CardPanel cardPanel;
   
-
+    //Constructor
     public Main() {
         mainMenu = new MainMenu();
         gamePanel = new GamePanel();
         chatPanel = new ChatPanel();
+        lobby = new Lobby();
         pOptionsPanel = new PlayerOptionsPanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
@@ -87,6 +79,10 @@ public class Main extends JFrame {
             this.joinGame(e);
         });
 
+        lobby.getStartGame().addActionListener((ActionEvent e) -> {
+            this.startGame(e);
+        });
+
         chatPanel.getSendButton().addActionListener((ActionEvent e) -> {
             this.send(e);
         });
@@ -95,7 +91,7 @@ public class Main extends JFrame {
         setupEventListeners();
     }
 
-    // Initializes the App Window, and creates the UI.
+    //initialize
     private void initializeComponents() {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -116,11 +112,6 @@ public class Main extends JFrame {
 
         contentPanel.add(optionsPanel, BorderLayout.WEST);
         contentPanel.add(gamePanel, BorderLayout.CENTER);
-       
-
-     
-
-
 
         this.add(contentPanel);
 
@@ -128,13 +119,17 @@ public class Main extends JFrame {
         this.setLocationRelativeTo(null);
     }
 
-    // Exit Button Action, exits from application
+    //Action Events for Buttons
     private void exit(ActionEvent e) {
         System.exit(0);
     }
 
-    // Host Game Button Action, sets up a server and a client for the host, and
-    // should proceed to the game lobby or panel.
+    private void startGame(ActionEvent e) {
+
+        this.switchToPOPanel();
+
+    }
+    
     private void hostGame(ActionEvent e) {
         // Asks for the host's username
         username = JOptionPane.showInputDialog(this, "Enter your username:");
@@ -155,12 +150,10 @@ public class Main extends JFrame {
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
-            this.switchToPOPanel();
+            this.switchToLobbyPanel();
         }
     }
 
-    // Join Game Button Action, allows a user to join a host's server, proceed
-    // to lobby/gameboard
     private void joinGame(ActionEvent e) {
         // For creating a custom JOptionPane confirm dialog
         JTextField serverAddressField = new JTextField();
@@ -190,13 +183,12 @@ public class Main extends JFrame {
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
-            this.switchToPOPanel();
+            this.switchToLobbyPanel();
         }
 
 
     }
 
-    // Send Button Action, allows a user to send a message to the chat window
     private void send(ActionEvent e) {
 
         // Get input from chatInput textfield in chatPanel
@@ -208,15 +200,21 @@ public class Main extends JFrame {
         }
     }
 
-    // Adds the players message to the chat area. SwingUtilities was used to ensure
-    // Thread safety, but I do not know if it is necessary in this case
     public void updateChat(String message) {
         SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
     }
 
-    // Switches from the main menu panel to the player options panel
-    private void switchToPOPanel() {
+    //UI Transitions
+    private void switchToLobbyPanel() {
         optionsPanel.remove(mainMenu);
+        optionsPanel.add(lobby, 0);
+        lobby.setVisible(true);
+        optionsPanel.revalidate();
+        optionsPanel.repaint();
+    }
+
+    private void switchToPOPanel() {
+        optionsPanel.remove(lobby);
         optionsPanel.add(pOptionsPanel, 0);
         optionsPanel.add(cardPanel);
         cardPanel.setBackground(Color.CYAN);
@@ -226,6 +224,7 @@ public class Main extends JFrame {
 
     }
 
+    //Action Listeners
     private void setupEventListeners() {
         // Setting up event listeners for each player option button
         pOptionsPanel.getMoveButton().addActionListener(new MoveActionListener());
@@ -233,7 +232,6 @@ public class Main extends JFrame {
         pOptionsPanel.getAccusationButton().addActionListener(new AccusationActionListener());
     }
 
-    // Action Listener for the Move button
     private class MoveActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -242,7 +240,6 @@ public class Main extends JFrame {
         }
     }
 
-    // Action Listener for the Suggest button
     private class SuggestActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -290,7 +287,6 @@ public class Main extends JFrame {
         }
     }
 
-    // Action Listener for the Accusation button
     private class AccusationActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -338,7 +334,7 @@ public class Main extends JFrame {
         }
     }
 
-    // Starts up the Clue-Less Application
+    //Main Method
     public static void main( String[] args )
     {
         SwingUtilities.invokeLater(() -> new Main().setVisible(true));
