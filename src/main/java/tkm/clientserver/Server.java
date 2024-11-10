@@ -22,7 +22,7 @@ import java.util.concurrent.Executors;
 public class Server implements Runnable{
     
     public static final int PORT = 5555;            //place holder
-    private ServerSocket socket;
+    private ServerSocket serverSocket;
     private ExecutorService clientPool;             // Handles Client Threads concurrently
     private ArrayList<ClientHandler> clientList;    // List of all Clients on the server
     private boolean acceptingClients;               // Should the server accept clients
@@ -38,7 +38,7 @@ public class Server implements Runnable{
     public Server() {
         
         try {
-            socket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket(PORT);
             clientPool = Executors.newCachedThreadPool();
             clientList = new ArrayList<>();
             // Can be used to toggle the server accepting new clients.
@@ -58,7 +58,7 @@ public class Server implements Runnable{
         try {
             // Server will accept clients until 6 people have joined
             while(acceptingClients) {
-                Socket clientSocket = socket.accept();
+                Socket clientSocket = serverSocket.accept();
                 
                 /**
                  * TO DO
@@ -107,8 +107,8 @@ public class Server implements Runnable{
     private void shutdown() {
         try {
             // Check if server socket exists, and hasnt been closed already
-            if(socket != null && (socket.isClosed() == false)) {
-                socket.close();
+            if(serverSocket != null && (serverSocket.isClosed() == false)) {
+                serverSocket.close();
                 System.out.println("Server Socket Closed.");
             }
         } catch(IOException e) {

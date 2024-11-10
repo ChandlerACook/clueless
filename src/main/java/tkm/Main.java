@@ -1,5 +1,4 @@
 package tkm;
-
 import tkm.gamelogic.Card;
 import tkm.gamelogic.Player;
 import tkm.clientserver.Client;
@@ -41,16 +40,21 @@ public class Main extends JFrame {
     private GamePanel gamePanel;
     private ChatPanel chatPanel;
     private PlayerOptionsPanel pOptionsPanel;
+    private Lobby lobby;
+    private CardPanel cardPanel;
     private JPanel contentPanel;
     private JPanel optionsPanel;
+
     private String username;
     private Server gameServer;
     private Client gameClient;
+
     private MurderDeck murderDeck;
     private Player currentPlayer;
 
     public Main() {
         mainMenu = new MainMenu();
+        lobby = new Lobby();
         gamePanel = new GamePanel();
         chatPanel = new ChatPanel();
         pOptionsPanel = new PlayerOptionsPanel();
@@ -80,6 +84,10 @@ public class Main extends JFrame {
             this.joinGame(e);
         });
 
+        lobby.getStartGame().addActionListener((ActionEvent e) -> {
+            this.startGame(e);
+        });
+
         chatPanel.getSendButton().addActionListener((ActionEvent e) -> {
             this.send(e);
         });
@@ -99,18 +107,23 @@ public class Main extends JFrame {
         optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
         optionsPanel.add(mainMenu);
         optionsPanel.add(chatPanel);
+
+        optionsPanel.add(lobby);
+        
         chatPanel.setVisible(false);
+        lobby.setVisible(false);
+    
 
         // Setup the content panel
         contentPanel.setLayout(new BorderLayout(5, 5));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
         contentPanel.add(optionsPanel, BorderLayout.WEST);
         contentPanel.add(gamePanel, BorderLayout.CENTER);
-
         this.add(contentPanel);
-
         this.pack();
         this.setLocationRelativeTo(null);
+
+        
     }
 
     // Exit Button Action, exits from application
@@ -118,6 +131,11 @@ public class Main extends JFrame {
         System.exit(0);
     }
 
+    private void startGame(ActionEvent e) {
+
+        this.switchToPOPanel();
+
+    }
     // Host Game Button Action, sets up a server and a client for the host, and
     // should proceed to the game lobby or panel.
     private void hostGame(ActionEvent e) {
@@ -140,47 +158,33 @@ public class Main extends JFrame {
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
-            this.switchToPOPanel();
+            this.switchToLobbyPanel();
         }
     }
 
-    // Join Game Button Action, allows a user to join a host's server, proceed
-    // to lobby/gameboard
+
     private void joinGame(ActionEvent e) {
-        // For creating a custom JOptionPane confirm dialog
-        JTextField serverAddressField = new JTextField();
-        JTextField portField = new JTextField(Integer.toString(Server.PORT));
-        Object[] message = {
-                "Server IP Address: ", serverAddressField,
-                "Server Port: ", portField
-        };
-
-        // Whether the user accepts or cancels joining the server.
-        int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
-                JOptionPane.OK_CANCEL_OPTION);
-
-        // Player accepts joining the server
-        if(option == JOptionPane.OK_OPTION) {
-            // Asks for the player's username
-            username = JOptionPane.showInputDialog(this, "Enter your username:");
-
-            /* TO DO
-             * Add way for user to specify serverAddress and port from dialog box
-             * Change client initialization below to use inputted fields
-             * Add check for empty username
-             */
-
-            // Start player's client
-            gameClient = new Client("localhost", Server.PORT, username, this);
-            new Thread(gameClient).start();
-
-            chatPanel.setVisible(true);
-            this.switchToPOPanel();
-        }
-
+        String ipAddress = JOptionPane.showInputDialog(this, "IP Address:");
+        username = JOptionPane.showInputDialog(this, "Enter your username:");
+        gameClient = new Client(ipAddress, Server.PORT, username, this);
+        new Thread(gameClient).start();
+        chatPanel.setVisible(true);
+        this.switchToLobbyPanel();
 
     }
+/*
+    private void joinGame(ActionEvent e) {
+        String ipAddress = JOptionPane.showInputDialog(this, "IP Address:");
+        username = JOptionPane.showInputDialog(this, "Enter your username:");
 
+        if(ipAddress != null && username != null) {
+            gameClient = new Client(ipAddress, Server.PORT, username, this);
+            new Thread(gameClient).start();
+            chatPanel.setVisible(true);
+            this.switchToLobbyPanel();
+        }
+}
+*/
     // Send Button Action, allows a user to send a message to the chat window
     private void send(ActionEvent e) {
 
@@ -199,9 +203,17 @@ public class Main extends JFrame {
         SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
     }
 
+    private void switchToLobbyPanel() {
+        optionsPanel.remove(mainMenu);
+        optionsPanel.add(lobby, 0);
+        lobby.setVisible(true);
+        optionsPanel.revalidate();
+        optionsPanel.repaint();
+    }
+
     // Switches from the main menu panel to the player options panel
     private void switchToPOPanel() {
-        optionsPanel.remove(mainMenu);
+        optionsPanel.remove(lobby);
         optionsPanel.add(pOptionsPanel, 0);
 
         optionsPanel.revalidate();
@@ -319,6 +331,10 @@ public class Main extends JFrame {
             }
         }
     }
+
+
+
+
 
     // Starts up the Clue-Less Application
     public static void main( String[] args )

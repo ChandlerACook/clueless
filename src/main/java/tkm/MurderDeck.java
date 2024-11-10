@@ -1,6 +1,6 @@
 package tkm;
-
-import tkm.gamelogic.Card;
+import tkm.gamelogic.*;
+import tkm.ui.*;
 
 /**
  * MurderDeck class holds the solution deck that 

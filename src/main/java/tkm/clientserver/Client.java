@@ -20,28 +20,31 @@ import tkm.Main;
 public class Client implements Runnable{
     
     //private String username;
-    private int port;
+    public static final int PORT = 5555;
+    //private int port;
     private String serverAddress;
-    private Socket socket;
+    private Socket clientSocket;
     private BufferedReader incoming;    // getting updates from the server
     private PrintWriter outgoing;       // writing messages to the server
-    // Possibly bad design to pass in the whole app class, maybe just chatArea?
-    private Main main;                    // Reference to game so client can update
+                                        // Possibly bad design to pass in the whole app class, maybe just chatArea?
+    private Main main;                  // Reference to game so client can update
     
     // Constructor, creates a socket, and connects to the server
     public Client(String serverAddress, int port, String username, Main main) {
         this.serverAddress = serverAddress;
-        this.port = port;
+        //this.port = port;
         //this.username = username;
+
         this.main = main;
         
         // Try to connect to the server, and create input/output streams
         try {
-            socket = new Socket(this.serverAddress, this.port);
-            incoming = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            outgoing = new PrintWriter(socket.getOutputStream(), true);
+            //socket = new Socket(this.serverAddress, this.port);
+            clientSocket = new Socket(this.serverAddress, PORT);
+            incoming = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            outgoing = new PrintWriter(clientSocket.getOutputStream(), true);
             System.out.println("Connected to server at: " + serverAddress + ":" 
-                    + port);
+                    + PORT);
         } catch(IOException e) {
             System.out.println("Could not connect to server: " 
                     + e.getMessage());
@@ -70,7 +73,7 @@ public class Client implements Runnable{
             Add a check to see if they exist != null
             */
             try {
-                socket.close();
+                clientSocket.close();
                 incoming.close();
                 outgoing.close();
             } catch(IOException e) {
