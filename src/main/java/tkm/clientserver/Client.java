@@ -20,7 +20,8 @@ import tkm.Main;
 public class Client implements Runnable{
     
     //private String username;
-    private int port;
+    public static final int PORT = 5555;
+    //private int port;
     private String serverAddress;
     private Socket socket;
     private BufferedReader incoming;    // getting updates from the server
@@ -29,19 +30,21 @@ public class Client implements Runnable{
     private Main main;                    // Reference to game so client can update
     
     // Constructor, creates a socket, and connects to the server
-    public Client(String serverAddress, int port, String username, Main main) {
+    public Client(String serverAddress, String username, Main main) {
         this.serverAddress = serverAddress;
-        this.port = port;
+        //this.port = port;
         //this.username = username;
+
         this.main = main;
         
         // Try to connect to the server, and create input/output streams
         try {
-            socket = new Socket(this.serverAddress, this.port);
+            //socket = new Socket(this.serverAddress, this.port);
+            socket = new Socket(this.serverAddress, PORT);
             incoming = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             outgoing = new PrintWriter(socket.getOutputStream(), true);
             System.out.println("Connected to server at: " + serverAddress + ":" 
-                    + port);
+                    + PORT);
         } catch(IOException e) {
             System.out.println("Could not connect to server: " 
                     + e.getMessage());

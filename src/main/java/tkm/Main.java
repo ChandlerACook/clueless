@@ -152,7 +152,7 @@ public class Main extends JFrame {
             new Thread(gameServer).start();
 
             // Start the host's client
-            gameClient = new Client("localhost", Server.PORT, username, this);
+            gameClient = new Client("localhost", username, this);
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
@@ -192,7 +192,7 @@ public class Main extends JFrame {
              */
 
             // Start player's client
-            gameClient = new Client(ipAddress, Server.PORT, username, this);
+            gameClient = new Client(ipAddress, username, this);
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
