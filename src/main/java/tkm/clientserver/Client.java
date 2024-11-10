@@ -30,7 +30,7 @@ public class Client implements Runnable{
     private Main main;                    // Reference to game so client can update
     
     // Constructor, creates a socket, and connects to the server
-    public Client(String serverAddress, String username, Main main) {
+    public Client(String serverAddress, int port, String username, Main main) {
         this.serverAddress = serverAddress;
         //this.port = port;
         //this.username = username;

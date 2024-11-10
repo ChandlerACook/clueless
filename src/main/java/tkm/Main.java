@@ -152,7 +152,7 @@ public class Main extends JFrame {
             new Thread(gameServer).start();
 
             // Start the host's client
-            gameClient = new Client("localhost", username, this);
+            gameClient = new Client("localhost", Server.PORT, username, this);
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
@@ -162,52 +162,51 @@ public class Main extends JFrame {
 
     // Join Game Button Action, allows a user to join a host's server, proceed
     // to lobby/gameboard
-    private void joinGame(ActionEvent e) {
-        // For creating a custom JOptionPane confirm dialog
-        JTextField serverAddressField = new JTextField();
-
-        JTextField portField = new JTextField(Integer.toString(Server.PORT));
+    //private void joinGame(ActionEvent e) {
+               // For creating a custom JOptionPane confirm dialog
+               //JTextField serverAddressField = new JTextField();
+               //JTextField portField = new JTextField(Integer.toString(Server.PORT));
+               //Object[] message = {
+               //        "Server IP Address: ", serverAddressField,
+               //        "Server Port: ", portField
+               //};
        
-        Object[] message = {
-                "Server IP Address: ", serverAddressField,
+               // Whether the user accepts or cancels joining the server.
+               //int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
+               //        JOptionPane.OK_CANCEL_OPTION);
+       
+               // Player accepts joining the server
+               //if(option == JOptionPane.OK_OPTION) {
+                   // Asks for the player's username
+                //   username = JOptionPane.showInputDialog(this, "Enter your username:");
+       
+                   /* TO DO
+                    * Add way for user to specify serverAddress and port from dialog box
+                    * Change client initialization below to use inputted fields
+                    * Add check for empty username
+                    */
+       
+                   // Start player's client
+                //   gameClient = new Client("localhost", Server.PORT, username, this);
+                //   new Thread(gameClient).start();
+       
+                //   chatPanel.setVisible(true);
+                //   this.switchToLobbyPanel();
+              // }
 
-                "Server Port: ", portField
-        };
+    //}
 
-        if(username != null) {
-            username = JOptionPane.showInputDialog(this, "Enter your username:");
-            String ipAddress = serverAddressField.getText();
-            gameClient = new Client(ipAddress, username, this);
+    private void joinGame(ActionEvent e) {
+        String ipAddress = JOptionPane.showInputDialog("IP Address:");
+        username = JOptionPane.showInputDialog(this, "Enter your username:");
+
+        if(ipAddress != null && username != null) {
+            gameClient = new Client(ipAddress, Server.PORT, username, this);
             new Thread(gameClient).start();
             chatPanel.setVisible(true);
             this.switchToLobbyPanel();
         }
-
-        // Whether the user accepts or cancels joining the server.
-        //int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
-        //        JOptionPane.OK_CANCEL_OPTION);
-
-        // Player accepts joining the server
-        //if(option == JOptionPane.OK_OPTION) {
-            // Asks for the player's username
-        //    username = JOptionPane.showInputDialog(this, "Enter your username:");
-        //    String ipAddress = serverAddressField.getText();
-            /* TO DO
-             * Add way for user to specify serverAddress and port from dialog box
-             * Change client initialization below to use inputted fields
-             * Add check for empty username
-             */
-
-            // Start player's client
-        //    gameClient = new Client(ipAddress, username, this);
-        //    new Thread(gameClient).start();
-
-        //    chatPanel.setVisible(true);
-            
-        //    this.switchToLobbyPanel();
-        //}
-
-    }
+}
 
     // Send Button Action, allows a user to send a message to the chat window
     private void send(ActionEvent e) {
