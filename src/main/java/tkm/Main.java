@@ -162,23 +162,12 @@ public class Main extends JFrame {
 
 
     private void joinGame(ActionEvent e) {
-               JTextField serverAddressField = new JTextField();
-               JTextField portField = new JTextField(Integer.toString(Server.PORT));
-               Object[] message = {
-                       "Server IP Address: ", serverAddressField,
-                       "Server Port: ", portField
-               };
-
-               int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
-                       JOptionPane.OK_CANCEL_OPTION);
-       
-               if(option == JOptionPane.OK_OPTION) {
-                   username = JOptionPane.showInputDialog(this, "Enter your username:");
-                   gameClient = new Client("localhost", Server.PORT, username, this);
-                   new Thread(gameClient).start();
-                   chatPanel.setVisible(true);
-                   this.switchToLobbyPanel();
-               }
+        String ipAddress = JOptionPane.showInputDialog(this, "IP Address:");
+        username = JOptionPane.showInputDialog(this, "Enter your username:");
+        gameClient = new Client(ipAddress, Server.PORT, username, this);
+        new Thread(gameClient).start();
+        chatPanel.setVisible(true);
+        this.switchToLobbyPanel();
 
     }
 /*
