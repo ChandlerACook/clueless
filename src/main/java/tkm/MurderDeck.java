@@ -1,6 +1,6 @@
 package tkm;
-
-import tkm.ui.Card;
+import tkm.gamelogic.*;
+import tkm.ui.*;
 
 /**
  * MurderDeck class holds the solution deck that 
@@ -15,9 +15,9 @@ public class MurderDeck {
 
     public MurderDeck() {
         // Mock solution for now
-        correctSuspect = new Card("Mr. Green");
-        correctWeapon = new Card("Revolver");
-        correctRoom = new Card("Library");
+        correctSuspect = new Card("Mr. Green", 1);
+        correctWeapon = new Card("Revolver", 2);
+        correctRoom = new Card("Library", 3);
     }
 
     public boolean checkAccusation(Card suspect, Card weapon, Card room) {
