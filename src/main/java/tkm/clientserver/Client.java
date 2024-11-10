@@ -23,7 +23,7 @@ public class Client implements Runnable{
     public static final int PORT = 5555;
     //private int port;
     private String serverAddress;
-    private Socket socket;
+    private Socket clientSocket;
     private BufferedReader incoming;    // getting updates from the server
     private PrintWriter outgoing;       // writing messages to the server
     // Possibly bad design to pass in the whole app class, maybe just chatArea?
@@ -40,9 +40,9 @@ public class Client implements Runnable{
         // Try to connect to the server, and create input/output streams
         try {
             //socket = new Socket(this.serverAddress, this.port);
-            socket = new Socket(this.serverAddress, PORT);
-            incoming = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            outgoing = new PrintWriter(socket.getOutputStream(), true);
+            clientSocket = new Socket(this.serverAddress, PORT);
+            incoming = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            outgoing = new PrintWriter(clientSocket.getOutputStream(), true);
             System.out.println("Connected to server at: " + serverAddress + ":" 
                     + PORT);
         } catch(IOException e) {
@@ -73,7 +73,7 @@ public class Client implements Runnable{
             Add a check to see if they exist != null
             */
             try {
-                socket.close();
+                clientSocket.close();
                 incoming.close();
                 outgoing.close();
             } catch(IOException e) {
