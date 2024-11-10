@@ -26,7 +26,7 @@ public class Server implements Runnable{
     private ExecutorService clientPool;             // Handles Client Threads concurrently
     private ArrayList<ClientHandler> clientList;    // List of all Clients on the server
     private boolean acceptingClients;               // Should the server accept clients
-    
+    private int playerCount;
     /* TO DO
     Game state/logic class variable for server to manage and send updates to
     players
@@ -37,6 +37,7 @@ public class Server implements Runnable{
     // to all connected clients
     public Server() {
         
+
         try {
             socket = new ServerSocket(PORT);
             clientPool = Executors.newCachedThreadPool();
@@ -71,7 +72,7 @@ public class Server implements Runnable{
                 // clients
                 if(clientList.size() < 6) {
                     System.out.println("New Client Connected: " + clientSocket.getInetAddress());
-
+                    
                     /*
                     TO DO
                     Add game state/logic to clientHandler
@@ -122,5 +123,17 @@ public class Server implements Runnable{
             System.out.println("Client pool shutdown.");
         }
     }
+
+    /*
+    public synchronized void setPlayerCount() {
+        System.out.println(playerCount);
+        playerCount ++;
+        System.out.println(playerCount);
+    }
     
+    public synchronized int getPlayerCount() {
+        System.out.println(playerCount);
+        return playerCount;
+    }
+*/
 } // end of class Server

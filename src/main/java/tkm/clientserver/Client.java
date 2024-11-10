@@ -52,6 +52,7 @@ public class Client implements Runnable{
     @Override
     public void run() {
         //Updating a clients chat window, if there are any changes from the server
+        
         try {
             
             // Read updates from the server

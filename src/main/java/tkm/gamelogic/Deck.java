@@ -15,6 +15,7 @@ public class Deck {
     private String correctRoom;
     private List<String> caseFile;
     private List<String> playerHand;
+    private List<String> availableDeck;
     private int randomIndex;
 
     public Deck(){
@@ -65,22 +66,145 @@ public class Deck {
         caseFile.add(correctSuspect);
         caseFile.add(correctWeapon);
         caseFile.add(correctRoom);
+
+        // available cards to be dealt
+        availableDeck = new ArrayList<>();
+        availableDeck.addAll(suspects);
+        availableDeck.addAll(weapons);
+        availableDeck.addAll(rooms);
+
+        // shuffle deck
+        Collections.shuffle(availableDeck);
+
     }
 
-    
     public List<String> getCaseFile(Deck deck) {
         return caseFile;
     }
 
-    public List<String> deal(Deck deck, Player player) {
+    public List<String> getAvailableDeck(Deck deck) {
+        return availableDeck;
+    }
 
-        return playerHand;
+    public void deal(Deck deck, int playerCount) {
+        List<String> currentDeck = getAvailableDeck(deck);
+
+        if (playerCount == 3) {
+            List<String> playerHand1 = new ArrayList<>();
+            List<String> playerHand2 = new ArrayList<>();
+            List<String> playerHand3 = new ArrayList<>();
+
+            for(int i = 0; i < 7; i++) {
+                playerHand1.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand2.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand3.add(currentDeck.get(i));
+                currentDeck.remove(i);
+            }
+
+            Player player1 = new Player(1, playerHand1);
+            Player player2 = new Player(2, playerHand2);
+            Player player3 = new Player(3, playerHand3);
+            /*
+            Player.setPlayerHand(1, playerHand1);
+            Player.setPlayerHand(2, playerHand2);
+            Player.setPlayerHand(3, playerHand3);
+            */
+
+            // 7 cards each
+        }
+
+        if (playerCount == 4) {
+            List<String> playerHand1 = new ArrayList<>();
+            List<String> playerHand2 = new ArrayList<>();
+            List<String> playerHand3 = new ArrayList<>();
+            List<String> playerHand4 = new ArrayList<>();
+
+            for(int i = 0; i < 5; i++) {
+                playerHand1.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand2.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand3.add(currentDeck.get(i));
+                currentDeck.remove(i);
+            }
+
+            playerHand4.addAll(currentDeck);     
+            
+            Player player1 = new Player(1, playerHand1);
+            Player player2 = new Player(2, playerHand2);
+            Player player3 = new Player(3, playerHand3);
+            Player player4 = new Player(4, playerHand4);
+            // 3 players -- 5 cards
+            // 1 player -- 6 cards
+        }
+
+        if (playerCount == 5) {
+            List<String> playerHand1 = new ArrayList<>();
+            List<String> playerHand2 = new ArrayList<>();
+            List<String> playerHand3 = new ArrayList<>();
+            List<String> playerHand4 = new ArrayList<>();
+            List<String> playerHand5 = new ArrayList<>();
+
+            for(int i = 0; i < 4; i++) {
+                playerHand1.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand2.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand3.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand4.add(currentDeck.get(i));
+                currentDeck.remove(i);
+            }
+
+            playerHand5.addAll(currentDeck);
+
+            Player player1 = new Player(1, playerHand1);
+            Player player2 = new Player(2, playerHand2);
+            Player player3 = new Player(3, playerHand3);
+            Player player4 = new Player(4, playerHand4);
+            Player player5 = new Player(5, playerHand5);
+            // 4 players -- 4 cards
+            // 1 player -- 5 cards
+        }
+
+        if (playerCount == 6) {
+            List<String> playerHand1 = new ArrayList<>();
+            List<String> playerHand2 = new ArrayList<>();
+            List<String> playerHand3 = new ArrayList<>();
+            List<String> playerHand4 = new ArrayList<>();
+            List<String> playerHand5 = new ArrayList<>();
+            List<String> playerHand6 = new ArrayList<>();
+
+            for(int i = 0; i < 3; i++) {
+                playerHand1.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand2.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand3.add(currentDeck.get(i));
+                currentDeck.remove(i);
+            }
+
+            for(int i = 0; i < 4; i++) {
+                playerHand4.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand5.add(currentDeck.get(i));
+                currentDeck.remove(i);
+                playerHand6.add(currentDeck.get(i));
+                currentDeck.remove(i);
+            }
+
+            Player player1 = new Player(1, playerHand1);
+            Player player2 = new Player(2, playerHand2);
+            Player player3 = new Player(3, playerHand3);
+            Player player4 = new Player(4, playerHand4);
+            Player player5 = new Player(5, playerHand5);
+            Player player6 = new Player(6, playerHand6);
+            // 3 players -- 3 cards
+            // 3 players -- 4 cards
+        }
     }
     
     
 }
-
-
-// 1 = suspect
-// 2 = weapon
-// 3 = room

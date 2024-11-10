@@ -10,16 +10,21 @@ import tkm.ui.PlayerOptionsPanel;
 import tkm.ui.MainMenu;
 import tkm.ui.CardPanel;
 import tkm.ui.Lobby;
+import tkm.ui.WaitingLobby;
 //import tkm.enums.*;
 import tkm.enums.CharacterType;
 import tkm.enums.WeaponType;
 import tkm.enums.RoomType;
+
+import tkm.gamelogic.Deck;
 //
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.nio.file.WatchEvent;
+
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -43,18 +48,23 @@ public class Main extends JFrame {
     private MurderDeck murderDeck;
     private Player currentPlayer;
     private Lobby lobby;
+    private WaitingLobby waitingLobby;
     private CardPanel cardPanel;
+    private Deck deck;
+    private int numPlayers;
   
     //Constructor
     public Main() {
+        
         mainMenu = new MainMenu();
         gamePanel = new GamePanel();
         chatPanel = new ChatPanel();
         lobby = new Lobby();
+        waitingLobby = new WaitingLobby();
         pOptionsPanel = new PlayerOptionsPanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
-        cardPanel = new CardPanel();
+        //cardPanel = new CardPanel();
         this.initializeComponents();
 
         // Initialize game components
@@ -125,12 +135,13 @@ public class Main extends JFrame {
     }
 
     private void startGame(ActionEvent e) {
-
+        //int numPlayers = Server.getPlayerCount()
+        deck.deal(deck, numPlayers);
         this.switchToPOPanel();
-
     }
     
     private void hostGame(ActionEvent e) {
+        numPlayers = 0;
         // Asks for the host's username
         username = JOptionPane.showInputDialog(this, "Enter your username:");
 
@@ -144,9 +155,12 @@ public class Main extends JFrame {
             // Start the host's server on a new Thread
             gameServer = new Server();
             new Thread(gameServer).start();
+            
+
 
             // Start the host's client
             gameClient = new Client("localhost", Server.PORT, username, this);
+            numPlayers ++;
             new Thread(gameClient).start();
 
             chatPanel.setVisible(true);
@@ -180,10 +194,13 @@ public class Main extends JFrame {
 
             // Start player's client
             gameClient = new Client("localhost", Server.PORT, username, this);
+            
             new Thread(gameClient).start();
+            numPlayers ++;
+
 
             chatPanel.setVisible(true);
-            this.switchToLobbyPanel();
+            this.swithToWaitingPanel();
         }
 
 
@@ -213,7 +230,15 @@ public class Main extends JFrame {
         optionsPanel.repaint();
     }
 
-    private void switchToPOPanel() {
+    private void swithToWaitingPanel() {
+        optionsPanel.remove(mainMenu);
+        optionsPanel.add(waitingLobby, 0);
+        waitingLobby.setVisible(true);
+        optionsPanel.revalidate();
+        optionsPanel.repaint();
+    }
+
+    private synchronized void switchToPOPanel() {
         optionsPanel.remove(lobby);
         optionsPanel.add(pOptionsPanel, 0);
         optionsPanel.add(cardPanel);
