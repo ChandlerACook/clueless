@@ -174,17 +174,24 @@ public class Main extends JFrame {
                 "Server Port: ", portField
         };
 
-        
-
-        // Whether the user accepts or cancels joining the server.
-        int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
-                JOptionPane.OK_CANCEL_OPTION);
-
-        // Player accepts joining the server
-        if(option == JOptionPane.OK_OPTION) {
-            // Asks for the player's username
+        if(username != null) {
             username = JOptionPane.showInputDialog(this, "Enter your username:");
             String ipAddress = serverAddressField.getText();
+            gameClient = new Client(ipAddress, username, this);
+            new Thread(gameClient).start();
+            chatPanel.setVisible(true);
+            this.switchToLobbyPanel();
+        }
+
+        // Whether the user accepts or cancels joining the server.
+        //int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
+        //        JOptionPane.OK_CANCEL_OPTION);
+
+        // Player accepts joining the server
+        //if(option == JOptionPane.OK_OPTION) {
+            // Asks for the player's username
+        //    username = JOptionPane.showInputDialog(this, "Enter your username:");
+        //    String ipAddress = serverAddressField.getText();
             /* TO DO
              * Add way for user to specify serverAddress and port from dialog box
              * Change client initialization below to use inputted fields
@@ -192,13 +199,14 @@ public class Main extends JFrame {
              */
 
             // Start player's client
-            gameClient = new Client(ipAddress, username, this);
-            new Thread(gameClient).start();
+        //    gameClient = new Client(ipAddress, username, this);
+        //    new Thread(gameClient).start();
 
-            chatPanel.setVisible(true);
+        //    chatPanel.setVisible(true);
             
-            this.switchToLobbyPanel();
-        }
+        //    this.switchToLobbyPanel();
+        //}
+
     }
 
     // Send Button Action, allows a user to send a message to the chat window
