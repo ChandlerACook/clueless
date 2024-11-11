@@ -1,288 +1,207 @@
-package tkm;
+package tkm.gamelogic;
 
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-import tkm.gamelogic.GameBoard;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.PlayerOptionsPanel;
-import tkm.ui.MainMenu;
-import tkm.ui.CardPanel;
-import tkm.enums.CharacterType;
-import tkm.enums.WeaponType;
+import tkm.Player;
+import tkm.Card;
 import tkm.enums.RoomType;
-import tkm.gamelogic.Deck;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import tkm.enums.HallwayType;
+import tkm.enums.CharacterType;
+import javax.swing.JOptionPane;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import javax.swing.*;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public class Main extends JFrame {
+/**
+ * @file GameBoard.
+ * @date 10/26/2024, updated with MakeSuggestion and MakeAccusation consolidation on 11/10/2024.
+ * @authored by Mike, edited by Justin
+ *
+ * This class represents the game board and its current state. Keeps track of
+ * all player positions, room/hallway/startingSquare states, and updates when
+ * changes are made.
+ */
+public class GameBoard {
 
-    private MainMenu mainMenu;
-    private GamePanel gamePanel;
-    private ChatPanel chatPanel;
-    private PlayerOptionsPanel pOptionsPanel;
-    private JPanel contentPanel;
-    private JPanel optionsPanel;
-    private String username;
-    private Server gameServer;
-    private Client gameClient;
-    private GameBoard gameBoard;
-    private CardPanel cardPanel;
-    private Deck deck;
-    private List<Player> playersList;
-    private Player player;
+    private List<Player> players;
+    private Map<String, Location> locations;
+    private Deck deck;  // Add Deck as an instance variable
 
-    public Main() {
-        // Initialize UI components
-        mainMenu = new MainMenu();
-        chatPanel = new ChatPanel();
-        pOptionsPanel = new PlayerOptionsPanel();
-        optionsPanel = new JPanel();
-        contentPanel = new JPanel();
+    // Constructor now accepts players list
+    public GameBoard(List<Player> players) {
+        this.players = players;
+        locations = new HashMap<>();
+        this.createLocations();
+        this.createConnections();
+        this.deck = new Deck(new ArrayList<>(players));  // Pass players list to Deck constructor
+    }
 
-        // Initialize players and Deck
-        playersList = new ArrayList<>(); // Initialize the players list
-        player = new Player("Player 1", "Miss Scarlet"); // Example player
-        playersList.add(player);
+    // This creates all the locations on the gameboard, such as rooms, hallways, and starting squares.
+    private void createLocations() {
+        // Create all the rooms
+        for (RoomType room : RoomType.values()) {
+            locations.put(room.getName(), new Room(room));
+        }
 
-        // Initialize the Deck with players list
-        deck = new Deck(playersList);
-        deck.dealCards();
-        gameBoard = new GameBoard(playersList); // Initialize GameBoard with players list
-        gamePanel = new GamePanel(playersList);
+        // Create each starting character's location
+        for (CharacterType character : CharacterType.values()) {
+            locations.put(character.getName() + " Starting Square", new StartingSquare(character));
+        }
 
-        // Initialize player hand (Make sure player is initialized before accessing hand)
-        List<Card> playerHandCards = player.getPlayerHand();
-        if (playerHandCards != null) {
-            cardPanel = new CardPanel(playerHandCards); // Pass List<Card> to CardPanel constructor
+        // Create all the hallways
+        for (HallwayType hallway : HallwayType.values()) {
+            locations.put(hallway.getName(), new Hallway(hallway));
+        }
+    }
+
+    // Creates the location connections
+    private void createConnections() {
+        // Creates bidirectional connections with all hallways and rooms.
+        connectLocations("Hall-Study", RoomType.HALL.getName(), RoomType.STUDY.getName());
+        connectLocations("Hall-Billiard", RoomType.HALL.getName(), RoomType.BILLIARD_ROOM.getName());
+        connectLocations("Hall-Lounge", RoomType.HALL.getName(), RoomType.LOUNGE.getName(), "Miss Scarlet Starting Square");
+
+        connectLocations("Library-Study", RoomType.LIBRARY.getName(), RoomType.STUDY.getName(), "Professor Plum Starting Square");
+        connectLocations("Library-Billiard", RoomType.LIBRARY.getName(), RoomType.BILLIARD_ROOM.getName());
+        connectLocations("Library-Conservatory", RoomType.LIBRARY.getName(), RoomType.CONSERVATORY.getName(), "Mrs. Peacock Starting Square");
+
+        connectLocations("Dining-Lounge", RoomType.DINING_ROOM.getName(), RoomType.LOUNGE.getName(), "Kernel Mustard Starting Square");
+        connectLocations("Dining-Billiard", RoomType.DINING_ROOM.getName(), RoomType.BILLIARD_ROOM.getName());
+        connectLocations("Dining-Kitchen", RoomType.DINING_ROOM.getName(), RoomType.KITCHEN.getName());
+
+        connectLocations("Ballroom-Conservatory", RoomType.BALLROOM.getName(), RoomType.CONSERVATORY.getName(), "Mr. Green Starting Square");
+        connectLocations("Ballroom-Billiard", RoomType.BALLROOM.getName(), RoomType.BILLIARD_ROOM.getName());
+        connectLocations("Ballroom-Kitchen", RoomType.BALLROOM.getName(), RoomType.KITCHEN.getName(), "Mrs. White Starting Square");
+
+        // Create secretPassageway connections, Study-Kitchen, Lounge-Conservatory
+        connectLocations(RoomType.STUDY.getName(), RoomType.KITCHEN.getName());
+        connectLocations(RoomType.LOUNGE.getName(), RoomType.CONSERVATORY.getName());
+    } // end createConnections
+
+    // Helper method to connect multiple locations
+    private void connectLocations(String locationName, String... connectedLocationNames) {
+        Location location = locations.get(locationName);
+
+        if (location != null) {
+            for (String connectedLocationName : connectedLocationNames) {
+                Location connectedLocation = locations.get(connectedLocationName);
+                if (connectedLocation != null) {
+                    location.connect(connectedLocation);
+                }
+            }
         } else {
-            cardPanel = new CardPanel(new ArrayList<>()); // Default to empty list if no hand
+            System.out.println("Location not found for name: " + locationName);
+        }
+    }
+
+    public Deck getDeck() {
+        return deck;
+    }
+
+    public Card performDisproval(Player suggestingPlayer, Card suspect, Card weapon, Card room) {
+        int startingIndex = (players.indexOf(suggestingPlayer) + 1) % players.size();
+
+        // Go through each player in turn, starting from the player to the left
+        for (int i = 0; i < players.size() - 1; i++) {
+            Player playerToCheck = players.get((startingIndex + i) % players.size());
+
+            // Check if player has any of the suggested cards
+            List<Card> matchingCards = playerToCheck.getMatchingCards(suspect, weapon, room);
+            if (!matchingCards.isEmpty()) {
+                // If the player has more than one matching card, they select one to show
+                Card cardToShow = matchingCards.get(0); // or add logic to let player choose
+
+                // Show the card to the suggesting player (not visible to others)
+                JOptionPane.showMessageDialog(null,
+                        playerToCheck.getName() + " has shown " + suggestingPlayer.getName() + " a card.",
+                        "Disproval", JOptionPane.INFORMATION_MESSAGE);
+
+                // This card disproves the suggestion; return it
+                return cardToShow;
+            }
         }
 
-        this.initializeComponents();
+        // No player could disprove the suggestion
+        JOptionPane.showMessageDialog(null,
+                "No one could disprove the suggestion. " + suggestingPlayer.getName() +
+                        " may make an accusation or end their turn.",
+                "Disproval Result", JOptionPane.INFORMATION_MESSAGE);
 
-        // Add action listeners
-        mainMenu.getExitGameButton().addActionListener(this::exit);
-        mainMenu.getHostGameButton().addActionListener(this::hostGame);
-        mainMenu.getJoinGameButton().addActionListener(this::joinGame);
-
-        chatPanel.getSendButton().addActionListener(this::send);
-
-        setupEventListeners();
+        return null; // Indicating no disproval was found
     }
 
-    private void initializeComponents() {
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setResizable(false);
-        this.setTitle("Clue-Less");
-
-        // Setup the options panel
-        optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
-        optionsPanel.add(mainMenu);
-        optionsPanel.add(chatPanel);
-
-        chatPanel.setVisible(false);
-
-        // Setup the content panel
-        contentPanel.setLayout(new BorderLayout(5, 5));
-        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
-
-        contentPanel.add(optionsPanel, BorderLayout.WEST);
-        contentPanel.add(gamePanel, BorderLayout.CENTER);
-
-        this.add(contentPanel);
-        this.pack();
-        this.setLocationRelativeTo(null);
+    // Helper method to get matching cards from a player
+    private List<Card> getMatchingCards(Player player, Card suspect, Card weapon, Card room) {
+        return player.getCards().stream()
+                .filter(card -> card.equals(suspect) || card.equals(weapon) || card.equals(room))
+                .collect(Collectors.toList());
     }
 
-    private void switchToPOPanel() {
-        optionsPanel.remove(mainMenu);
+    // Method to handle making a suggestion
+    public void performSuggestion(Player player, Card suspect, Card weapon, Card room) {
+        // Check if the player is in the same room as the suggested room
+        if (!player.getCurrentRoom().equals(room)) {
+            JOptionPane.showMessageDialog(null, "You must be in the room you're suggesting!");
+            return; // Exit the method if the player isn't in the right room
+        }
+        System.out.println(player.getName() + " suggests that it was " +
+                suspect.getName() + " with the " + weapon.getName() +
+                " in the " + room.getName());
 
-        // Get List<Card> from the player's hand
-        List<Card> playerHandCards = player.getPlayerHand(); // This returns List<Card>
-        if (playerHandCards != null) {
-            cardPanel = new CardPanel(playerHandCards); // Pass List<Card> to CardPanel constructor
+        displaySuggestion(player, suspect, weapon, room);
+
+        // Attempt disproval
+        Card disprovingCard = performDisproval(player, suspect, weapon, room);
+
+        // If disproving card is found, record it
+        if (disprovingCard != null) {
+            System.out.println("Disproving card shown: " + disprovingCard.getName());
+        }
+    }
+
+    // Display the suggestion in a dialog box
+    private void displaySuggestion(Player player, Card suspect, Card weapon, Card room) {
+        String message = player.getName() + " suggested that " +
+                suspect.getName() + " used the " + weapon.getName() +
+                " in the " + room.getName() + ".";
+
+        JOptionPane.showMessageDialog(null, message, "Suggestion Result", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // Method to handle making an accusation
+    public void performAccusation(Player player, Card suspect, Card weapon, Card room, Deck deck) {
+        boolean isCorrect = deck.checkAccusation(suspect, weapon, room);
+
+        // Display the result using the displayAccusation method
+        displayAccusation(player, suspect, weapon, room, isCorrect);
+
+        // Handle the result based on whether the accusation is correct or incorrect
+        if (isCorrect) {
+            System.out.println(player.getName() + " made a correct accusation!");
+            // Additional logic for correct accusation (e.g., end the game or announce winner)
         } else {
-            cardPanel = new CardPanel(new ArrayList<>()); // Default to empty list if no hand
-        }
-
-        optionsPanel.add(pOptionsPanel, 0);
-        optionsPanel.add(cardPanel);
-        cardPanel.setBackground(Color.CYAN);
-
-        optionsPanel.revalidate();
-        optionsPanel.repaint();
-    }
-
-    private void exit(ActionEvent e) {
-        System.exit(0);
-    }
-
-    private void hostGame(ActionEvent e) {
-        username = JOptionPane.showInputDialog(this, "Enter your username:");
-
-        if(username != null) {
-            gameServer = new Server();
-            new Thread(gameServer).start();
-
-            gameClient = new Client("localhost", Server.PORT, username, this);
-            new Thread(gameClient).start();
-
-            chatPanel.setVisible(true);
-            this.switchToPOPanel();
+            System.out.println(player.getName() + " made an incorrect accusation.");
+            // Additional logic for incorrect accusation (e.g., penalize or eliminate player)
         }
     }
 
-    private void joinGame(ActionEvent e) {
-        JTextField serverAddressField = new JTextField();
-        JTextField portField = new JTextField(Integer.toString(Server.PORT));
-        Object[] message = {
-                "Server IP Address: ", serverAddressField,
-                "Server Port: ", portField
-        };
 
-        int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
-                JOptionPane.OK_CANCEL_OPTION);
+    // Display the accusation result in a dialog box
+    private void displayAccusation(Player player, Card suspect, Card weapon, Card room, boolean isCorrect) {
+        String message;
 
-        if(option == JOptionPane.OK_OPTION) {
-            username = JOptionPane.showInputDialog(this, "Enter your username:");
-
-            gameClient = new Client("localhost", Server.PORT, username, this);
-            new Thread(gameClient).start();
-
-            chatPanel.setVisible(true);
-            this.switchToPOPanel();
+        if (isCorrect) {
+            message = player.getName() + " made a correct accusation! "
+                    + suspect.getName() + " used the " + weapon.getName()
+                    + " in the " + room.getName() + ".";
+        } else {
+            message = player.getName() + " made an incorrect accusation. They are eliminated!";
         }
+
+        JOptionPane.showMessageDialog(null, message, "Accusation Result", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void send(ActionEvent e) {
-        String message = chatPanel.getChatInput().getText();
-        if(!message.isEmpty()) {
-            gameClient.sendMessage("CHAT: " + username + ": " + message);
-            chatPanel.getChatInput().setText("");
-        }
+    public Map<String, Location> getLocations() {
+        return locations;
     }
-
-    public void updateChat(String message) {
-        SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
-    }
-
-    private void setupEventListeners() {
-        pOptionsPanel.getMoveButton().addActionListener(new MoveActionListener());
-        pOptionsPanel.getSuggestButton().addActionListener(new SuggestActionListener());
-        pOptionsPanel.getAccusationButton().addActionListener(new AccusationActionListener());
-    }
-
-    private class MoveActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            System.out.println("Move button clicked");
-            // Logic for player movement
-        }
-    }
-
-    private class SuggestActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JComboBox<String> suspectList = new JComboBox<>();
-            for (CharacterType character : CharacterType.values()) {
-                suspectList.addItem(character.getName());
-            }
-
-            JComboBox<String> weaponList = new JComboBox<>();
-            for (WeaponType weapon : WeaponType.values()) {
-                weaponList.addItem(weapon.getName());
-            }
-
-            JComboBox<String> roomList = new JComboBox<>();
-            for (RoomType room : RoomType.values()) {
-                roomList.addItem(room.getName());
-            }
-
-            JPanel panel = new JPanel(new GridLayout(0, 1));
-            panel.add(new JLabel("Select suspect:"));
-            panel.add(suspectList);
-            panel.add(new JLabel("Select weapon:"));
-            panel.add(weaponList);
-            panel.add(new JLabel("Select room:"));
-            panel.add(roomList);
-
-            int result = JOptionPane.showConfirmDialog(null, panel, "Make a Suggestion", JOptionPane.OK_CANCEL_OPTION);
-            if (result == JOptionPane.OK_OPTION) {
-                // No need to convert the selected item to String, as it's already a String
-                String suspectName = (String) suspectList.getSelectedItem();
-                String weaponName = (String) weaponList.getSelectedItem();
-                String roomName = (String) roomList.getSelectedItem();
-
-                // Create Card objects directly from selected values
-                Card suspect = new Card(suspectName);
-                Card weapon = new Card(weaponName);
-                Card room = new Card(roomName);
-
-                // Perform suggestion logic
-                gameBoard.performSuggestion(player, suspect, weapon, room); // GameBoard handles suggestion
-            }
-        }
-    }
-
-    private class AccusationActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JComboBox<String> suspectList = new JComboBox<>();
-            for (CharacterType character : CharacterType.values()) {
-                suspectList.addItem(character.getName());
-            }
-
-            JComboBox<String> weaponList = new JComboBox<>();
-            for (WeaponType weapon : WeaponType.values()) {
-                weaponList.addItem(weapon.getName());
-            }
-
-            JComboBox<String> roomList = new JComboBox<>();
-            for (RoomType room : RoomType.values()) {
-                roomList.addItem(room.getName());
-            }
-
-            JPanel panel = new JPanel(new GridLayout(0, 1));
-            panel.add(new JLabel("Select suspect:"));
-            panel.add(suspectList);
-            panel.add(new JLabel("Select weapon:"));
-            panel.add(weaponList);
-            panel.add(new JLabel("Select room:"));
-            panel.add(roomList);
-
-            int result = JOptionPane.showConfirmDialog(null, panel, "Make an Accusation", JOptionPane.OK_CANCEL_OPTION);
-            if (result == JOptionPane.OK_OPTION) {
-                // No need to convert the selected item to String, as it's already a String
-                String suspectName = (String) suspectList.getSelectedItem();
-                String weaponName = (String) weaponList.getSelectedItem();
-                String roomName = (String) roomList.getSelectedItem();
-
-                // Create Card objects directly from selected values
-                Deck deck = new Deck(playersList);  // Pass players to Deck constructor
-
-                // Get the suspect, weapon, and room from user input
-                Card suspect = new Card(suspectName);
-                Card weapon = new Card(weaponName);
-                Card room = new Card(roomName);
-
-                // Perform accusation logic by checking against the Deck
-                gameBoard.performAccusation(player, suspect, weapon, room, deck); // GameBoard handles accusation
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Main frame = new Main();
-            frame.setVisible(true);
-        });
-    }
-}
+} // end class GameBoard
