@@ -1,4 +1,5 @@
 package tkm;
+
 import tkm.gamelogic.Card;
 import tkm.gamelogic.Player;
 import tkm.clientserver.Client;
@@ -14,6 +15,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -22,6 +24,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import tkm.gamelogic.GamePiece;
+import tkm.ui.StartGamePanel;
+import tkm.ui.TitlePanel;
 
 /**
  * App class serves as the main controller for the game by
@@ -40,24 +45,23 @@ public class Main extends JFrame {
     private GamePanel gamePanel;
     private ChatPanel chatPanel;
     private PlayerOptionsPanel pOptionsPanel;
-    private Lobby lobby;
-    private CardPanel cardPanel;
+    private TitlePanel titlePanel;
     private JPanel contentPanel;
     private JPanel optionsPanel;
-
+    private StartGamePanel startPanel;
+    
     private String username;
     private Server gameServer;
     private Client gameClient;
-
+    
     private MurderDeck murderDeck;
     private Player currentPlayer;
 
     public Main() {
         mainMenu = new MainMenu();
-        lobby = new Lobby();
-        gamePanel = new GamePanel();
         chatPanel = new ChatPanel();
         pOptionsPanel = new PlayerOptionsPanel();
+        titlePanel = new TitlePanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
         this.initializeComponents();
@@ -84,16 +88,10 @@ public class Main extends JFrame {
             this.joinGame(e);
         });
 
-        lobby.getStartGame().addActionListener((ActionEvent e) -> {
-            this.startGame(e);
-        });
-
         chatPanel.getSendButton().addActionListener((ActionEvent e) -> {
             this.send(e);
         });
 
-        // Set up event listeners for player options
-        setupEventListeners();
     }
 
     // Initializes the App Window, and creates the UI.
@@ -107,23 +105,18 @@ public class Main extends JFrame {
         optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
         optionsPanel.add(mainMenu);
         optionsPanel.add(chatPanel);
-
-        optionsPanel.add(lobby);
-        
         chatPanel.setVisible(false);
-        lobby.setVisible(false);
-    
 
         // Setup the content panel
         contentPanel.setLayout(new BorderLayout(5, 5));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
         contentPanel.add(optionsPanel, BorderLayout.WEST);
-        contentPanel.add(gamePanel, BorderLayout.CENTER);
+        contentPanel.add(titlePanel, BorderLayout.CENTER);
+
         this.add(contentPanel);
+
         this.pack();
         this.setLocationRelativeTo(null);
-
-        
     }
 
     // Exit Button Action, exits from application
@@ -131,16 +124,9 @@ public class Main extends JFrame {
         System.exit(0);
     }
 
-    private void startGame(ActionEvent e) {
-
-        this.switchToPOPanel();
-
-    }
     // Host Game Button Action, sets up a server and a client for the host, and
     // should proceed to the game lobby or panel.
     private void hostGame(ActionEvent e) {
-        // Asks for the host's username
-        username = JOptionPane.showInputDialog(this, "Enter your username:");
 
         /*
         TO DO
@@ -148,43 +134,76 @@ public class Main extends JFrame {
         Way for user to back out of hostgame without making a server
         */
 
-        if(username != null) {
+        //if(username != null) {
             // Start the host's server on a new Thread
-            gameServer = new Server();
+            gameServer = new Server(this);
             new Thread(gameServer).start();
 
             // Start the host's client
-            gameClient = new Client("localhost", Server.PORT, username, this);
+            gameClient = new Client("localhost", Server.PORT, this, true);
             new Thread(gameClient).start();
 
-            chatPanel.setVisible(true);
-            this.switchToLobbyPanel();
-        }
+            gamePanel = new GamePanel(gameServer.getGameBoard().getTileMap(), 
+                    gameServer.getGameBoard().getGamePieces());
+            
+            this.createStartPanel(true);
+        //}
     }
 
-
+    // Join Game Button Action, allows a user to join a host's server, proceed
+    // to lobby/gameboard
     private void joinGame(ActionEvent e) {
-        String ipAddress = JOptionPane.showInputDialog(this, "IP Address:");
-        username = JOptionPane.showInputDialog(this, "Enter your username:");
-        gameClient = new Client(ipAddress, Server.PORT, username, this);
-        new Thread(gameClient).start();
+        // For creating a custom JOptionPane confirm dialog
+        JTextField serverAddressField = new JTextField();
+        JTextField portField = new JTextField(Integer.toString(Server.PORT));
+        Object[] message = {
+                "Server IP Address: ", serverAddressField,
+                "Server Port: ", portField
+        };
+
+        // Whether the user accepts or cancels joining the server.
+        int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
+                JOptionPane.OK_CANCEL_OPTION);
+
+        // Player accepts joining the server
+        if(option == JOptionPane.OK_OPTION) {
+
+            /* TO DO
+             * Add way for user to specify serverAddress and port from dialog box
+             * Change client initialization below to use inputted fields
+             * Add check for empty username
+             */
+
+            // Start player's client
+            gameClient = new Client("localhost", Server.PORT, this, false);
+            new Thread(gameClient).start();
+            
+            this.createStartPanel(false);
+        }
+    }
+    
+    private void createStartPanel(boolean host) {
+        startPanel = new StartGamePanel(host);
+            
+            startPanel.getStartGameButton().addActionListener((ActionEvent ev) -> {
+                this.start(ev);
+            });
+            
+        this.switchToStartGamePanel();
+    }
+    
+    // Start Game Action, allows a user to start the game.
+    private void start(ActionEvent e) {
+        //Let joined players know the game has started
+        gameClient.sendMessage("START " + "|END|");
         chatPanel.setVisible(true);
-        this.switchToLobbyPanel();
-
+        this.switchToPOPanel();
+        // Set up event listeners for player options
+        setupEventListeners();
+        this.switchToGamePanel();
+        this.gameServer.getGameBoard().startGame();
     }
-/*
-    private void joinGame(ActionEvent e) {
-        String ipAddress = JOptionPane.showInputDialog(this, "IP Address:");
-        username = JOptionPane.showInputDialog(this, "Enter your username:");
 
-        if(ipAddress != null && username != null) {
-            gameClient = new Client(ipAddress, Server.PORT, username, this);
-            new Thread(gameClient).start();
-            chatPanel.setVisible(true);
-            this.switchToLobbyPanel();
-        }
-}
-*/
     // Send Button Action, allows a user to send a message to the chat window
     private void send(ActionEvent e) {
 
@@ -192,8 +211,21 @@ public class Main extends JFrame {
         String message = chatPanel.getChatInput().getText();
         // Only send a message if its not empty
         if(message.isEmpty() == false) {
-            gameClient.sendMessage("CHAT: " + username + ": " + message);
+            gameClient.sendMessage("CHAT: " + message + "|END|");
             chatPanel.getChatInput().setText("");
+        }
+    }
+    
+    public void startGameForJoinedPlayers() {
+        if(gameClient.getHost() == false) {
+            SwingUtilities.invokeLater(() -> {
+                chatPanel.setVisible(true);
+                this.switchToPOPanel();
+                // Set up event listeners for player options
+                setupEventListeners();
+                this.switchToGamePanel();
+                gamePanel.repaint();
+            });
         }
     }
 
@@ -202,22 +234,48 @@ public class Main extends JFrame {
     public void updateChat(String message) {
         SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
     }
+    
+    public void updatePlayerCount(int count) {
+        SwingUtilities.invokeLater(() -> startPanel.updatePlayerCount(count));
+    }
+    
+    public void initializeGamePanel(int[][] tileMap, ArrayList<GamePiece> pieces) {
+        gamePanel = new GamePanel(tileMap, pieces);
+    }
 
-    private void switchToLobbyPanel() {
+    private void switchToStartGamePanel() {
         optionsPanel.remove(mainMenu);
-        optionsPanel.add(lobby, 0);
-        lobby.setVisible(true);
+        optionsPanel.add(startPanel, 0);
+        
         optionsPanel.revalidate();
         optionsPanel.repaint();
     }
-
+    
     // Switches from the main menu panel to the player options panel
     private void switchToPOPanel() {
-        optionsPanel.remove(lobby);
+        optionsPanel.remove(startPanel);
         optionsPanel.add(pOptionsPanel, 0);
 
         optionsPanel.revalidate();
         optionsPanel.repaint();
+    }
+    
+    // Switches from the title screen to the gameboard screen
+    private void switchToGamePanel() {
+        contentPanel.remove(titlePanel);
+        contentPanel.add(gamePanel, BorderLayout.CENTER);
+        
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+    
+    public void redrawGamePanel(ArrayList<GamePiece> pieces) {
+        SwingUtilities.invokeLater(() -> {
+            this.gamePanel.setGamePieces(pieces);
+            gamePanel.revalidate();
+            gamePanel.repaint();
+        });
+        
     }
 
     private void setupEventListeners() {
@@ -233,6 +291,9 @@ public class Main extends JFrame {
         public void actionPerformed(ActionEvent e) {
             // TO DO, add in player moves
             System.out.println("Move button clicked");
+            if (gameClient != null) {
+                gameClient.sendMessage("REQUEST_MOVES|END|");
+            }
         }
     }
 
@@ -331,11 +392,7 @@ public class Main extends JFrame {
             }
         }
     }
-
-
-
-
-
+    
     // Starts up the Clue-Less Application
     public static void main( String[] args )
     {
