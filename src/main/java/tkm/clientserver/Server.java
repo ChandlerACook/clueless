@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import tkm.Main;
+import tkm.gamelogic.GameBoard;
 
 /**
  * @file Server.java
@@ -22,10 +24,12 @@ import java.util.concurrent.Executors;
 public class Server implements Runnable{
     
     public static final int PORT = 5555;            //place holder
-    private ServerSocket serverSocket;
+    private ServerSocket socket;
     private ExecutorService clientPool;             // Handles Client Threads concurrently
     private ArrayList<ClientHandler> clientList;    // List of all Clients on the server
     private boolean acceptingClients;               // Should the server accept clients
+    private GameBoard gameBoard;
+    private Main main;
     
     /* TO DO
     Game state/logic class variable for server to manage and send updates to
@@ -35,10 +39,11 @@ public class Server implements Runnable{
     // Constructor, attempts to set up a server socket on PORT, while creating
     // a Executor pool to manage concurrency, and a client list that has references
     // to all connected clients
-    public Server() {
-        
+    public Server(Main main) {
+        this.main = main;
+        this.gameBoard = new GameBoard();
         try {
-            serverSocket = new ServerSocket(PORT);
+            socket = new ServerSocket(PORT);
             clientPool = Executors.newCachedThreadPool();
             clientList = new ArrayList<>();
             // Can be used to toggle the server accepting new clients.
@@ -58,7 +63,7 @@ public class Server implements Runnable{
         try {
             // Server will accept clients until 6 people have joined
             while(acceptingClients) {
-                Socket clientSocket = serverSocket.accept();
+                Socket clientSocket = socket.accept();
                 
                 /**
                  * TO DO
@@ -72,12 +77,14 @@ public class Server implements Runnable{
                 if(clientList.size() < 6) {
                     System.out.println("New Client Connected: " + clientSocket.getInetAddress());
 
-                    /*
-                    TO DO
-                    Add game state/logic to clientHandler
-                    */
+                    ClientHandler clientHandler;
                     
-                    ClientHandler clientHandler = new ClientHandler(clientSocket, this);
+                    // Is the client the host or not
+                    if(clientList.isEmpty()) {
+                        clientHandler = new ClientHandler(clientSocket, this, true);
+                    } else {
+                        clientHandler = new ClientHandler(clientSocket, this, false);
+                    }
                     clientList.add(clientHandler);
                     // use the pool to handle communication between clients
                     clientPool.execute(clientHandler);
@@ -103,12 +110,17 @@ public class Server implements Runnable{
         }
     }
     
+    // broadcast update to a specific client, used for gameboard initialization
+    public synchronized void broadcast(String message, ClientHandler client) {
+        client.sendMessage(message);
+    }
+    
     // Helper method to shut down sockets and threads
     private void shutdown() {
         try {
             // Check if server socket exists, and hasnt been closed already
-            if(serverSocket != null && (serverSocket.isClosed() == false)) {
-                serverSocket.close();
+            if(socket != null && (socket.isClosed() == false)) {
+                socket.close();
                 System.out.println("Server Socket Closed.");
             }
         } catch(IOException e) {
@@ -121,6 +133,18 @@ public class Server implements Runnable{
             clientPool.shutdown();
             System.out.println("Client pool shutdown.");
         }
+    }
+    
+    public GameBoard getGameBoard() {
+        return gameBoard;
+    }
+    
+    public Main getMain() {
+        return main;
+    }
+    
+    public int getClientListSize() {
+        return clientList.size();
     }
     
 } // end of class Server
