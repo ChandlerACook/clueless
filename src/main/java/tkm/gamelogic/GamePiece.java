@@ -1,7 +1,7 @@
 
 package tkm.gamelogic;
 
-import javax.swing.ImageIcon;
+import java.awt.Graphics;
 import tkm.enums.CharacterType;
 
 /**
@@ -19,13 +19,13 @@ public class GamePiece {
 
     private int x;
     private int y;
-    private final ImageIcon icon;
+    //private final ImageIcon icon;
     private final CharacterType character;
     
-    public GamePiece(int x, int y, ImageIcon icon, CharacterType character) {
+    public GamePiece(int x, int y, CharacterType character) {
         this.x = x;
         this.y = y;
-        this.icon = icon;
+        //this.icon = icon;
         this.character = character;
     }
     
@@ -33,24 +33,30 @@ public class GamePiece {
         return x;
     }
     
-    public void setX(int x) {
-        this.x = x;
-    }
-    
     public int getY() {
         return y;
     }
     
-    public void setY(int y) {
+    public void setPosition(int x, int y) {
+        this.x = x;
         this.y = y;
     }
     
-    public ImageIcon getIcon() {
-        return icon;
+//    public ImageIcon getIcon() {
+//        return icon;
+//    }
+    
+    public void draw(Graphics g) {
+        g.setColor(character.getColor());
+        g.fillOval(x * 30, y * 30, 30, 30); // Draw player as a circle with a size of 30x30 pixels
     }
     
     public CharacterType getCharacter() {
         return character;
+    }
+    
+    public String toString() {
+        return character.getName() + "," + x + "," + y;
     }
     
 }

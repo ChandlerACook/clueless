@@ -5,18 +5,21 @@ import tkm.enums.CharacterType;
 
 public class Player {
     private final String name;
-    private final CharacterType character;  // The character the player is playing as
-    private final GamePiece gamePiece;
+    private CharacterType character;  // The character the player is playing as
+    private GamePiece gamePiece;
     private final ArrayList<Card> hand;
     
     // initialize a player with a name and character
-    public Player(String name, GamePiece gamePiece, ArrayList<Card> hand) {
+    public Player(String name) {
         this.name = name;
-        this.gamePiece = gamePiece;
-        this.character = gamePiece.getCharacter();
-        this.hand = hand; 
+        this.hand = new ArrayList<>(); 
     }
 
+    
+    public void move(int x, int y) {
+        this.gamePiece.setPosition(x, y);
+    }
+    
     public String getName() {
         return name;
     }
@@ -25,11 +28,40 @@ public class Player {
         return character;
     }
     
+    public void setGamePiece(GamePiece gamePiece) {
+        this.gamePiece = gamePiece;
+        this.setCharacter();
+    }
+    
+    private void setCharacter() {
+        this.character = gamePiece.getCharacter();
+    }
+    
+    public void addCard(Card card) {
+        this.hand.add(card);
+    }
+    
     public ArrayList<Card> getHand() {
         return hand;
     }
     
     public GamePiece getGamePiece() {
         return gamePiece;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        
+        b.append(name);
+        b.append(" ");
+        b.append(gamePiece.toString());
+        b.append(" ");
+        
+        for(Card card: hand) {
+            b.append(card.toString());
+        }
+        
+        return b.toString();
     }
 }
