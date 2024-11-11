@@ -1,8 +1,8 @@
 
 package tkm.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -26,20 +26,32 @@ public class TitlePanel extends JPanel {
     final private int screenWidth = tileSize * maxScreenCol; 
     final private int screenHeight = tileSize * maxScreenRow;
     
-    private final ImageIcon image;
+    //private final ImageIcon image;
     private final JLabel title;
     private final JLabel authors;
     
     public TitlePanel() {
-        image = new ImageIcon();
-        
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        title = new JLabel("Clue-Less");
-        title.setFont(new Font("SansSerif", Font.BOLD, 60));
-        title.setForeground(Color.RED);
-        title.setHorizontalAlignment(SwingConstants.CENTER);
-        this.add(title);
+        this.setPreferredSize(new Dimension(screenWidth, screenHeight));
+        this.setBackground(Color.black);
+        this.setDoubleBuffered(true);
         
+        title = new JLabel("Clue-Less");
+        //image = new ImageIcon();
+        authors = new JLabel("Chandler Cook, Derek Osborne, Guenevere Logan, "
+                + "Justin Nguyen, Stephen Snelling ");
+        
+        title.setFont(new Font("SansSerif", Font.BOLD, 60));
+        title.setForeground(Color.WHITE);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        authors.setFont(new Font("SansSerif", Font.BOLD, 10));
+        authors.setForeground(Color.LIGHT_GRAY);
+        authors.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        this.add(title);
+        //this.add(image);
+        this.add(authors);      
     }
     
 }

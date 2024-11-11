@@ -4,9 +4,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.util.ArrayList;
 import javax.swing.JPanel;
 import tkm.enums.TileType;
-import tkm.gamelogic.GameBoard;
+import tkm.gamelogic.GamePiece;
 
 /**
  * @file GamePanel.java
@@ -24,13 +25,14 @@ public class GamePanel extends JPanel{
     final private int originalTileSize = 10; // 16x16 tile
     final private int scale = 3;  // scale up * 3
 
-    final private int tileSize = originalTileSize * scale; // 48x48 tile
+    final private int tileSize = originalTileSize * scale; // 30X30 tile
     final private int maxScreenCol = 20;
     final private int maxScreenRow = 20;
-    final private int screenWidth = tileSize * maxScreenCol; // 768 pixels
-    final private int screenHeight = tileSize * maxScreenRow; // 576 pixels
+    final private int screenWidth = tileSize * maxScreenCol; // 600 pixels
+    final private int screenHeight = tileSize * maxScreenRow; // 600 pixels
     
-    private GameBoard gameBoard;
+    private int[][] tileMap;
+    private ArrayList<GamePiece> pieces;
     
     //private final Map<Point, Component> roomMap;
     
@@ -42,7 +44,7 @@ public class GamePanel extends JPanel{
      */
 
     
-    public GamePanel() {
+    public GamePanel(int[][] tileMap, ArrayList<GamePiece> pieces) {
 
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
@@ -60,16 +62,20 @@ public class GamePanel extends JPanel{
 
         //roomMap = new HashMap<>();
 
-        //this.gameBoard = gameBoard;
-        gameBoard = new GameBoard();
+        this.tileMap = tileMap;
+        this.pieces = pieces;
         
     } //end of Constructor
+    
+    public void setGamePieces(ArrayList<GamePiece> pieces) {
+        this.pieces = pieces;
+    }
     
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        int[][] tileMap = gameBoard.getTileMap();
+        //int[][] tileMap = gameBoard.getTileMap();
         
         for (int i = 0; i < tileMap.length; i++) {
             for (int j = 0; j < tileMap[i].length; j++) {
@@ -96,6 +102,7 @@ public class GamePanel extends JPanel{
         }
         
         this.drawRoomLabels(g);
+        this.drawGamePieces(g);
     }
     
     // Helper method to draw labels of each room
@@ -111,6 +118,12 @@ public class GamePanel extends JPanel{
         g.drawString("Conservatory", 30, 590);
         g.drawString("Ballroom", 250, 590);
         g.drawString("Kitchen", 450, 590);
+    }
+    
+    private void drawGamePieces(Graphics g) {
+        for(GamePiece piece : pieces) {
+            piece.draw(g);
+        }
     }
     
 }
