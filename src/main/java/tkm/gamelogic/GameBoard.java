@@ -1,11 +1,18 @@
-
 package tkm.gamelogic;
 
 import tkm.enums.RoomType;
 import tkm.enums.HallwayType;
+import tkm.Player;
 import tkm.enums.CharacterType;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import tkm.Card;
 
 /**
  * @file GameBoard.
@@ -21,6 +28,13 @@ public class GameBoard {
     //private List<Player> players;
     //private List<Card> caseFile;
     private Map<String, Location> locations;
+    private List<Player> players = new ArrayList<>();
+    private List<String> availableCharacters = Arrays.asList(
+        "Miss Scarlet", "Col. Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Prof. Plum"
+    );
+    private List<Card> roomCards;   // Initialize with room cards
+    private List<Card> weaponCards; // Initialize with weapon cards
+    private List<Card> characterCards; // Initialize with character cards
     
     
    public GameBoard() {
@@ -94,5 +108,40 @@ public class GameBoard {
     
     public Map<String, Location> getLocations() {
         return locations;
+    }
+
+    public void startGame() {
+        assignCharacters();
+        assignHands();
+    }
+
+    private void assignCharacters() {
+        Collections.shuffle(availableCharacters);
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).setCharacter(availableCharacters.get(i));
+        }
+    }
+
+    private void assignHands() {
+        List<Card> deck = createDeck();
+        Collections.shuffle(deck);
+
+        int cardsPerPlayer = deck.size() / players.size();
+        for (int i = 0; i < players.size(); i++) {
+            List<Card> hand = deck.subList(i * cardsPerPlayer, (i + 1) * cardsPerPlayer);
+            players.get(i).setHand(new ArrayList<>(hand));
+        }
+    }
+
+    private List<Card> createDeck() {
+        List<Card> deck = new ArrayList<>();
+        deck.addAll(roomCards);
+        deck.addAll(weaponCards);
+        deck.addAll(characterCards);
+        return deck;
+    }
+
+    public void addPlayer(Player player) {
+        players.add(player);
     }
 } // end class GameBoard
