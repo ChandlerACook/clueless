@@ -1,21 +1,12 @@
 package tkm;
 
-import tkm.gamelogic.Card;
-import tkm.gamelogic.Player;
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.PlayerOptionsPanel;
-import tkm.ui.MainMenu;
-import tkm.enums.CharacterType;
-import tkm.enums.WeaponType;
-import tkm.enums.RoomType;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -24,7 +15,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
+import tkm.clientserver.Client;
+import tkm.clientserver.Server;
+import tkm.enums.CharacterType;
+import tkm.enums.RoomType;
+import tkm.enums.WeaponType;
+import tkm.gamelogic.Card;
 import tkm.gamelogic.GamePiece;
+import tkm.gamelogic.Player;
+import tkm.ui.CardPanel;
+import tkm.ui.ChatPanel;
+import tkm.ui.GamePanel;
+import tkm.ui.MainMenu;
+import tkm.ui.PlayerOptionsPanel;
 import tkm.ui.StartGamePanel;
 import tkm.ui.TitlePanel;
 
@@ -49,6 +53,7 @@ public class Main extends JFrame {
     private JPanel contentPanel;
     private JPanel optionsPanel;
     private StartGamePanel startPanel;
+    private CardPanel cardPanel;
     
     private String username;
     private Server gameServer;
@@ -64,6 +69,7 @@ public class Main extends JFrame {
         titlePanel = new TitlePanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
+        cardPanel = new CardPanel();
         this.initializeComponents();
 
         // Initialize game components
@@ -264,6 +270,8 @@ public class Main extends JFrame {
     private void switchToGamePanel() {
         contentPanel.remove(titlePanel);
         contentPanel.add(gamePanel, BorderLayout.CENTER);
+        optionsPanel.add(cardPanel);
+        cardPanel.setBackground(Color.CYAN);
         
         contentPanel.revalidate();
         contentPanel.repaint();
