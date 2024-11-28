@@ -1,7 +1,10 @@
 package tkm.ui;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.GridLayout;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 public class CardPanel extends JPanel {
 
@@ -9,7 +12,7 @@ public class CardPanel extends JPanel {
     private JLabel playerHand;
 
     public CardPanel() {
-        this.initComponents();;
+        this.initComponents();
         this.setLayout(new GridLayout(0,1,5,5));
         this.add(playerHand);
     }

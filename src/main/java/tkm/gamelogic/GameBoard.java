@@ -2,7 +2,6 @@
 package tkm.gamelogic;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+
 import tkm.enums.CharacterType;
 import tkm.enums.RoomType;
 import tkm.enums.WeaponType;
@@ -81,6 +81,9 @@ public class GameBoard {
         this.assignPlayerToGamePiece();
         this.dealCards();
         
+
+        
+
         // for debugging
         for(Player player : players)
             System.out.println(player.toString());
