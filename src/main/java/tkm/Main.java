@@ -1,12 +1,21 @@
 package tkm;
 
+import tkm.gamelogic.Card;
+import tkm.gamelogic.Player;
+import tkm.clientserver.Client;
+import tkm.clientserver.Server;
+import tkm.ui.ChatPanel;
+import tkm.ui.GamePanel;
+import tkm.ui.PlayerOptionsPanel;
+import tkm.ui.MainMenu;
+import tkm.enums.CharacterType;
+import tkm.enums.WeaponType;
+import tkm.enums.RoomType;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -15,20 +24,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-import tkm.enums.CharacterType;
-import tkm.enums.RoomType;
-import tkm.enums.WeaponType;
-import tkm.gamelogic.Card;
 import tkm.gamelogic.GamePiece;
-import tkm.gamelogic.Player;
-import tkm.ui.CardPanel;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.MainMenu;
-import tkm.ui.PlayerOptionsPanel;
 import tkm.ui.StartGamePanel;
 import tkm.ui.TitlePanel;
 
@@ -53,7 +49,6 @@ public class Main extends JFrame {
     private JPanel contentPanel;
     private JPanel optionsPanel;
     private StartGamePanel startPanel;
-    private CardPanel cardPanel;
     
     private String username;
     private Server gameServer;
@@ -61,7 +56,6 @@ public class Main extends JFrame {
     
     private MurderDeck murderDeck;
     private Player currentPlayer;
-    //private ArrayList<Player> players;
 
     public Main() {
         mainMenu = new MainMenu();
@@ -70,8 +64,6 @@ public class Main extends JFrame {
         titlePanel = new TitlePanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
-        //cardPanel = new CardPanel();
-        
         this.initializeComponents();
 
         // Initialize game components
@@ -190,6 +182,8 @@ public class Main extends JFrame {
         }
     }
     
+    // This creates the lobby area based on whether the user is the host or not
+    // If they are the host, they have the capability to start the game.
     private void createStartPanel(boolean host) {
         startPanel = new StartGamePanel(host);
             
@@ -200,7 +194,8 @@ public class Main extends JFrame {
         this.switchToStartGamePanel();
     }
     
-    // Start Game Action, allows a user to start the game.
+    // Start Game Action, allows a host user to start the game when they feel 
+    // ready to start.
     private void start(ActionEvent e) {
         //Let joined players know the game has started
         gameClient.sendMessage("START " + "|END|");
@@ -208,9 +203,8 @@ public class Main extends JFrame {
         this.switchToPOPanel();
         // Set up event listeners for player options
         setupEventListeners();
-
-        this.gameServer.getGameBoard().startGame();
         this.switchToGamePanel();
+        this.gameServer.getGameBoard().startGame();
     }
 
     // Send Button Action, allows a user to send a message to the chat window
@@ -225,6 +219,10 @@ public class Main extends JFrame {
         }
     }
     
+    // This method is used to start the game for non-Host players, as they do not
+    // have the option to start the game and therefore need to be triggered to 
+    // move to the start of the game when the host starts. This method is called
+    // when the server sends out the message.
     public void startGameForJoinedPlayers() {
         if(gameClient.getHost() == false) {
             SwingUtilities.invokeLater(() -> {
@@ -239,19 +237,27 @@ public class Main extends JFrame {
     }
 
     // Adds the players message to the chat area. SwingUtilities was used to ensure
-    // Thread safety, but I do not know if it is necessary in this case
+    // Thread safety, and is required when using swing and multiple threads
     public void updateChat(String message) {
         SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
     }
     
+    
+    // This method updates the lobby panel to show the amount of connected players
+    // It receives this information from the server each time someone joins.
     public void updatePlayerCount(int count) {
         SwingUtilities.invokeLater(() -> startPanel.updatePlayerCount(count));
     }
     
+    // This method is used to create the starting gamepanel for clients, based
+    // on the servers gameBoard data. It will always be the same in this case
+    // however.
     public void initializeGamePanel(int[][] tileMap, ArrayList<GamePiece> pieces) {
         gamePanel = new GamePanel(tileMap, pieces);
     }
 
+    // This method is used to update the UI, in this
+    // case proceeding to the lobby.
     private void switchToStartGamePanel() {
         optionsPanel.remove(mainMenu);
         optionsPanel.add(startPanel, 0);
@@ -265,7 +271,6 @@ public class Main extends JFrame {
         optionsPanel.remove(startPanel);
         optionsPanel.add(pOptionsPanel, 0);
 
-        
         optionsPanel.revalidate();
         optionsPanel.repaint();
     }
@@ -274,14 +279,13 @@ public class Main extends JFrame {
     private void switchToGamePanel() {
         contentPanel.remove(titlePanel);
         contentPanel.add(gamePanel, BorderLayout.CENTER);
-        CardPanel cardPanel = new CardPanel(currentPlayer);
-        optionsPanel.add(cardPanel);
-        cardPanel.setBackground(Color.CYAN);
         
         contentPanel.revalidate();
         contentPanel.repaint();
     }
     
+    // This method is used to redraw the gamePanel anytime there is a change in
+    // player/weapon location. TO-DO add weapon locations
     public void redrawGamePanel(ArrayList<GamePiece> pieces) {
         SwingUtilities.invokeLater(() -> {
             this.gamePanel.setGamePieces(pieces);
@@ -297,7 +301,7 @@ public class Main extends JFrame {
         pOptionsPanel.getSuggestButton().addActionListener(new SuggestActionListener());
         pOptionsPanel.getAccusationButton().addActionListener(new AccusationActionListener());
     }
-
+    
     // Action Listener for the Move button
     private class MoveActionListener implements ActionListener {
         @Override
@@ -309,6 +313,12 @@ public class Main extends JFrame {
             }
         }
     }
+    
+    /**
+     * Justin's Code for Suggestions and Accusations
+     * 
+     * need to me implemented with server/client messaging.
+     */
 
     // Action Listener for the Suggest button
     private class SuggestActionListener implements ActionListener {
