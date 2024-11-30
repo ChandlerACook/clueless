@@ -7,9 +7,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Set;
-
 import javax.swing.JOptionPane;
-
 import tkm.gamelogic.GamePiece;
 import tkm.gamelogic.Player;
 
@@ -60,9 +58,7 @@ public class ClientHandler implements Runnable{
             
             // Asks for the host's username
             username = JOptionPane.showInputDialog(null, "Enter your username:");
-            //added an int value to players added.  server stores the running int, but can be adapted.
-            player = new Player(server.addPlayer(), username);
-            
+            player = new Player(username);
             server.getGameBoard().addPlayer(player);
             
             // Updates the player count when a player joins and sends them the starting
@@ -90,7 +86,7 @@ public class ClientHandler implements Runnable{
             }
             
         } catch(IOException e) {
-            System.out.println("Client handler encounterd an issue: " 
+            System.out.println("Client handler encountered an issue: " 
                     + e.getMessage());
         } finally {
             /*
@@ -112,19 +108,31 @@ public class ClientHandler implements Runnable{
         outgoing.println(message);
     }
     
+    /*
+    This is the important method in the Client Handler, as it decides what to do
+    when receiving messages from the connected clients. Anytime you want a client
+    to do a change on their end and have it reflected on everyones machine, you 
+    have to first send the message on the client side and then process it here.
+    */
     private void handleClientMessage(String fullMessage) {
         // Removing the "|END|" from the message
         //fullMessage = fullMessage.replace("|END|", "").trim();
-        System.out.println(fullMessage);
+        //System.out.println(fullMessage);
 
         // Update chat if a chat message comes from the server
         if (fullMessage.startsWith("CHAT: ")) {
-            // trims CHAT: from message
             server.broadcast(username + ": " + fullMessage); // Broadcast chat messages to all clients
-        } else if (fullMessage.contains("START")) {
+        } 
+        
+        // This is used to start the game, with only the host being allowed to do it
+        else if (fullMessage.contains("START")) {
             if(this.host)
                 server.broadcast(fullMessage);
-        } else if(fullMessage.contains("REQUEST_MOVES")) {
+        } 
+        
+        // This message is recieved when a client clicks the move button, giving
+        // them valid movement options to choose from
+        else if(fullMessage.contains("REQUEST_MOVES")) {
             GamePiece piece = server.getGameBoard().getPlayerGamePiece(player);
             Set<int[]> validMoves = server.getGameBoard().generateValidMoves(piece);
             StringBuilder movesMessage = new StringBuilder("VALID_MOVES:");
@@ -135,13 +143,23 @@ public class ClientHandler implements Runnable{
             movesMessage.append("|END|");
             sendMessage(movesMessage.toString());
             
-        } else if(fullMessage.startsWith("MOVE: ")) {
+        } 
+        
+        // Once a client chooses a valid move option, they send a message with
+        // their choice and the server updates and broadcasts.
+        else if(fullMessage.startsWith("MOVE: ")) {
             this.handleMove(fullMessage);
-        } else {
+        } 
+        
+        // An unknown client message was received
+        else {
             outgoing.println("Unknown command: " + fullMessage);
         }
     }
     
+    // This method receives the movement choice from the player, and updates
+    // the game board accordingly. After the update, the server broadcasts the
+    // change to all clients.
     private void handleMove(String message) {
         //System.out.println(message);
         message = message.replace("MOVE: ", "").replace("|END|", "").trim();

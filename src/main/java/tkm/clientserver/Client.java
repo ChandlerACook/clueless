@@ -8,9 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JOptionPane;
-
 import tkm.Main;
 import tkm.enums.CharacterType;
 import tkm.gamelogic.GamePiece;
@@ -102,6 +100,14 @@ public class Client implements Runnable{
         outgoing.println(message);
     }
     
+    /*
+    This method is important for anything you want to change on the client's
+    system based on messages recieved from the server. This would be when a different
+    client moves for example. It receives a message in the form 
+    "MESSAGE_TYPE: [DATA] | [DATA] |END|"
+    or
+    "MESSAGE_TYPE"
+    */
     private void handleServerMessage(String fullMessage) {
         // Removing the "|END|" from the message
         fullMessage = fullMessage.replace("|END|", "").trim();
@@ -110,17 +116,46 @@ public class Client implements Runnable{
         // Update chat if a chat message comes from the server
         if (fullMessage.contains("CHAT: ")) {
             main.updateChat(fullMessage.replace("CHAT: ", ""));
-        } else if (fullMessage.startsWith("PLAYERJOINED: ")) {
+        } 
+        
+        // Updates the amount of players that have joined in the lobby
+        else if (fullMessage.startsWith("PLAYERJOINED: ")) {
             main.updatePlayerCount(Integer.parseInt(fullMessage.substring(14)));
-        } else if (fullMessage.equals("START")) {
+        }
+        
+        // Starts the game for non-host players, proceeds to the gamepanel
+        else if (fullMessage.equals("START")) {
             main.startGameForJoinedPlayers();
-        } else if (fullMessage.startsWith("GAMEBOARD: ")) {
+        } 
+        
+        // This server message is used to create the starting gameboard based on the
+        // server data
+        else if (fullMessage.startsWith("GAMEBOARD: ")) {
             this.tileMap = this.parseTileMap(fullMessage.substring(11));
-        } else if (fullMessage.startsWith("PIECES: ")) {
+        }
+        
+        // This server message is used to both create the starting game piece locations
+        // and when updating their locations.
+        else if (fullMessage.startsWith("PIECES: ")) {
             this.pieces = (this.parseGamePieces(fullMessage.substring(8)));
-        } else if (fullMessage.equals("INITIALIZE")) {
+        } 
+        
+        // This server message is used to create the client's game panel when the game
+        // starts
+        else if (fullMessage.equals("INITIALIZE")) {
             main.initializeGamePanel(tileMap, pieces);
-        } else if(fullMessage.startsWith("VALID_MOVES:")) {
+        } 
+        
+        // This server message is used to create the client's card Panel when the
+        // game starts
+        else if(fullMessage.startsWith("PLAYER_CARDS:")) {
+            
+        }
+        
+        // This server message is used to present the player with possible moves
+        // when they click on the move button
+        else if(fullMessage.startsWith("VALID_MOVES:")) {
+            // removes the message type, and the data separators |.
             String[] moves = fullMessage.substring(12).split("\\|");
             List<String> moveOptions = new ArrayList<>();
             for (String move : moves) {
@@ -142,11 +177,16 @@ public class Client implements Runnable{
             if (selectedMove != null && !selectedMove.isEmpty()) {
                 sendMessage("MOVE: " + selectedMove + "|END|");
             }
-        } else if(fullMessage.equals("REDRAW")) {
+        } 
+        // This server message tells the client to redraw their gamepanel to
+        // represent any changes.
+        else if(fullMessage.equals("REDRAW")) {
             main.redrawGamePanel(pieces);
         }
     }
     
+    // Used to put the string tileMap data received from the server back
+    // together again.
     private int[][] parseTileMap(String serializedTileMap) {
         String[] rows = serializedTileMap.split("\n");
         int[][] newTileMap = new int[rows.length][];
@@ -162,6 +202,8 @@ public class Client implements Runnable{
         return newTileMap;
     }
     
+    // Used to put the string representation of the gamepieces and their locations
+    // back into usable data.
     private ArrayList<GamePiece> parseGamePieces(String serializedPieces) {
         ArrayList<GamePiece> jpieces = new ArrayList<>();
         String[] lines = serializedPieces.split("\n");

@@ -5,13 +5,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import tkm.Main;
 import tkm.gamelogic.GameBoard;
-import tkm.gamelogic.Player;
 
 /**
  * @file Server.java
@@ -33,8 +30,7 @@ public class Server implements Runnable{
     private boolean acceptingClients;               // Should the server accept clients
     private GameBoard gameBoard;
     private Main main;
-    private int playerCount;
-    private HashMap<Client, Player> connectPlayer;
+    
     /* TO DO
     Game state/logic class variable for server to manage and send updates to
     players
@@ -44,7 +40,6 @@ public class Server implements Runnable{
     // a Executor pool to manage concurrency, and a client list that has references
     // to all connected clients
     public Server(Main main) {
-        playerCount = 0;
         this.main = main;
         this.gameBoard = new GameBoard();
         try {
@@ -151,13 +146,5 @@ public class Server implements Runnable{
     public int getClientListSize() {
         return clientList.size();
     }
-
-    public int addPlayer() {
-        return playerCount++;
-    }
     
-    //trying from google ai overview and geeksforgeeks
-    public void addClientPlayer(Client client, Player player) {
-        connectPlayer.put(client, player);
-    }
 } // end of class Server
