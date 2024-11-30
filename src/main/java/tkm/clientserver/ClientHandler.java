@@ -7,7 +7,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Set;
+
 import javax.swing.JOptionPane;
+
 import tkm.gamelogic.GamePiece;
 import tkm.gamelogic.Player;
 
@@ -58,7 +60,9 @@ public class ClientHandler implements Runnable{
             
             // Asks for the host's username
             username = JOptionPane.showInputDialog(null, "Enter your username:");
-            player = new Player(username);
+            //added an int value to players added.  server stores the running int, but can be adapted.
+            player = new Player(server.addPlayer(), username);
+            
             server.getGameBoard().addPlayer(player);
             
             // Updates the player count when a player joins and sends them the starting

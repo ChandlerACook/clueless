@@ -383,4 +383,7 @@ public class GameBoard {
         return b.toString();
     }
     
-} // end class GameBoard
+    public ArrayList<Player> getPlayerList() {
+        return players;
+    }
+}

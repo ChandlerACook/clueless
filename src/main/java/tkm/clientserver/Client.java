@@ -8,7 +8,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.JOptionPane;
+
 import tkm.Main;
 import tkm.enums.CharacterType;
 import tkm.gamelogic.GamePiece;

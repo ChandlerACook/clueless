@@ -61,6 +61,7 @@ public class Main extends JFrame {
     
     private MurderDeck murderDeck;
     private Player currentPlayer;
+    //private ArrayList<Player> players;
 
     public Main() {
         mainMenu = new MainMenu();
@@ -69,7 +70,8 @@ public class Main extends JFrame {
         titlePanel = new TitlePanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
-        cardPanel = new CardPanel();
+        //cardPanel = new CardPanel();
+        
         this.initializeComponents();
 
         // Initialize game components
@@ -206,8 +208,9 @@ public class Main extends JFrame {
         this.switchToPOPanel();
         // Set up event listeners for player options
         setupEventListeners();
-        this.switchToGamePanel();
+
         this.gameServer.getGameBoard().startGame();
+        this.switchToGamePanel();
     }
 
     // Send Button Action, allows a user to send a message to the chat window
@@ -262,6 +265,7 @@ public class Main extends JFrame {
         optionsPanel.remove(startPanel);
         optionsPanel.add(pOptionsPanel, 0);
 
+        
         optionsPanel.revalidate();
         optionsPanel.repaint();
     }
@@ -270,6 +274,7 @@ public class Main extends JFrame {
     private void switchToGamePanel() {
         contentPanel.remove(titlePanel);
         contentPanel.add(gamePanel, BorderLayout.CENTER);
+        CardPanel cardPanel = new CardPanel(currentPlayer);
         optionsPanel.add(cardPanel);
         cardPanel.setBackground(Color.CYAN);
         
