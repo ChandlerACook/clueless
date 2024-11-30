@@ -1,7 +1,6 @@
 package tkm.gamelogic;
 
 import java.util.ArrayList;
-
 import tkm.enums.CharacterType;
 
 public class Player {
@@ -9,22 +8,16 @@ public class Player {
     private CharacterType character;  // The character the player is playing as
     private GamePiece gamePiece;
     private final ArrayList<Card> hand;
-    private final int turnNum;
     
     // initialize a player with a name and character
-    public Player(int turnNum, String name) {
-        this.turnNum = turnNum;
+    public Player(String name) {
         this.name = name;
         this.hand = new ArrayList<>(); 
     }
 
-
+    
     public void move(int x, int y) {
         this.gamePiece.setPosition(x, y);
-    }
-
-    public int getPlayerTurn() {
-        return turnNum;
     }
     
     public String getName() {

@@ -3,8 +3,8 @@ package tkm.gamelogic;
 
 // game cards
 public class Card {
-    private int type;
-    private String name;
+    private final int type;
+    private final String name;
 
     // initialize the card name
     public Card(String name, int type) {

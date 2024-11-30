@@ -2,6 +2,7 @@
 package tkm.gamelogic;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-
 import tkm.enums.CharacterType;
 import tkm.enums.RoomType;
 import tkm.enums.WeaponType;
@@ -72,18 +72,22 @@ public class GameBoard {
        this.createDeck();
     }
     
+    /*
+    This method is called when the host starts the game. It shuffles the deck of
+    cards, creates the case file(murder deck), and shuffles the player order. It
+    then proceeds to assign players to gamepieces, while dealing out cards based on 
+    the asforementioned deck.
+    */
     public void startGame() {
         //Shuffle the deck
         Collections.shuffle(deck);
         this.createCaseFile();
         // Shuffle the players, in effect creating a turn order.
+        // TO-DO check the player shuffling, something doesnt work here.
         Collections.shuffle(players);
         this.assignPlayerToGamePiece();
         this.dealCards();
         
-
-        
-
         // for debugging
         for(Player player : players)
             System.out.println(player.toString());
@@ -98,12 +102,19 @@ public class GameBoard {
     // TO DO 
     // add a randomization instead of 1-1 mapping.
     private void assignPlayerToGamePiece() {
+        Collections.shuffle(pieces);
         for(int i = 0; i < players.size(); i++) {
             playerPieces.put(players.get(i), pieces.get(i));
             players.get(i).setGamePiece(pieces.get(i));
         }
     }
     
+    /*
+    This method deals out cards from the deck. It does this by looping through
+    the deck until it is empty, decrementing the playerIndex each time(resets if
+    it falls below 0), until the deck is empty. In effect it deals out the remaining
+    deck to the players one by one.
+    */
     private void dealCards() {
         int playerIndex = players.size() - 1;
         while(!deck.isEmpty()) {
@@ -114,6 +125,11 @@ public class GameBoard {
             if(playerIndex < 0) {
                 playerIndex = players.size() - 1;
             }
+        }
+        
+        // Map players to their hand for easier retrieval later.
+        for(int i = 0; i < players.size(); i++) {
+            playerHands.put(players.get(i), players.get(i).getHand());
         }
     }
 
@@ -127,6 +143,8 @@ public class GameBoard {
             deck.add(new Card(room.getName(), 3));
     }
     
+    // This helper method creates the gamepieces based on their information in
+    // CharacterType
     private void createGamePieces() {
         for(CharacterType character : CharacterType.values()) {
             pieces.add(new GamePiece(character.getX(), character.getY(), character));
@@ -142,6 +160,7 @@ public class GameBoard {
     }
     
     // For debug purposes, and checking correct accusations
+    // This prints out a string representation of the case file.
     private String caseFileToString() {
         StringBuilder b = new StringBuilder();
         
@@ -156,6 +175,7 @@ public class GameBoard {
     }
     
     // Helper method to find the first card of a passed in type(character, weapon, room)
+    // It loops through the deck until it finds the first of passed in type.
     private Card findFirstCard(int type) {
         for(Card card : deck) {
             if(card.getType() == type) {
@@ -230,7 +250,7 @@ public class GameBoard {
                 int adjX = currX + direction[0];
                 int adjY = currY + direction[1];
 
-                if (isWithinBounds(adjX, adjY) && !visited[adjY][adjX]) {
+                if (this.isWithinBounds(adjX, adjY) && !visited[adjY][adjX]) {
                     int tileType = TILEMAP[adjY][adjX];
 
                     if (tileType == roomNumber) {
@@ -238,8 +258,8 @@ public class GameBoard {
                     } else if (tileType == 1) {
                         // Found a hallway tile adjacent to the room
                         // Now find the next hallway tile (e.g., middle of the hallway)
-                        int[] hallwayTile = findNextHallwayTile(adjX, adjY, direction);
-                        if (hallwayTile != null && !isOccupied(hallwayTile[0], hallwayTile[1])) {
+                        int[] hallwayTile = this.findNextHallwayTile(adjX, adjY, direction);
+                        if (hallwayTile != null && !this.isOccupied(hallwayTile[0], hallwayTile[1])) {
                             validMoves.add(hallwayTile);
                         }
                     }
@@ -249,6 +269,7 @@ public class GameBoard {
         }
     }
 
+    // Helper data used for the BFS movement
     private static final int[][] DIRECTIONS = {
         {0, -1}, // Up
         {1, 0},  // Right
@@ -256,6 +277,8 @@ public class GameBoard {
         {-1, 0}  // Left
     };
 
+    // used in the BFS movement to check if the tile is out of bounds, 0 in our
+    // case.
     private boolean isWithinBounds(int x, int y) {
         return x >= 0 && x < TILEMAP[0].length && y >= 0 && y < TILEMAP.length;
     }
@@ -309,6 +332,8 @@ public class GameBoard {
     }
 
     // Helper to find the first unoccupied tile in a room
+    // Used when there are more than on character/weapon in a room, as they should
+    // not overlap.
     private int[] findFirstUnoccupiedTile(int roomNumber) {
         for (int y = 0; y < TILEMAP.length; y++) {
             for (int x = 0; x < TILEMAP[y].length; x++) {
@@ -328,16 +353,18 @@ public class GameBoard {
         }
     }
 
-    // Method to validate a move before it's made
-    public boolean validateMove(GamePiece piece, int newX, int newY) {
-        Set<int[]> validMoves = generateValidMoves(piece);
-        for (int[] move : validMoves) {
-            if (move[0] == newX && move[1] == newY) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // Method to validate a move before it's made, currently this is unused, I
+    // thought it might be necessary to valid a move before it is made, but this
+    // method is currently redundant.
+//    public boolean validateMove(GamePiece piece, int newX, int newY) {
+//        Set<int[]> validMoves = generateValidMoves(piece);
+//        for (int[] move : validMoves) {
+//            if (move[0] == newX && move[1] == newY) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
     
     public int[][] getTileMap() {
         return TILEMAP;
@@ -351,7 +378,11 @@ public class GameBoard {
         return playerPieces.get(player);
     }
     
-    // For debugging
+    public List<Card> getPlayerCards(Player player) {
+        return playerHands.get(player);
+    }
+    
+    // For debugging, prints a string representation of the deck
     private void printDeck() {
         for(Card card : deck) {
             System.out.print(card);
@@ -359,6 +390,8 @@ public class GameBoard {
         System.out.println();
     }
     
+    // returns a string representation of the tileMap, used when creating the
+    // game panel.
     public String stringTileMap() {
         StringBuilder b = new StringBuilder();
         
@@ -372,6 +405,8 @@ public class GameBoard {
         return b.toString();
     }
     
+    // returns a string representation of the game pieces. Used when updating or
+    // creating the game panel
     public String stringPieces() {
         StringBuilder b = new StringBuilder();
         
@@ -383,7 +418,4 @@ public class GameBoard {
         return b.toString();
     }
     
-    public ArrayList<Player> getPlayerList() {
-        return players;
-    }
-}
+} // end class GameBoard
