@@ -19,6 +19,10 @@ public class Player {
     }
 
 
+    public Player getPlayer(GamePiece gamePiece) {
+        return this;
+    } 
+    
     public void move(int x, int y) {
         this.gamePiece.setPosition(x, y);
     }

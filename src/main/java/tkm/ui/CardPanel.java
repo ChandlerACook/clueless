@@ -38,7 +38,7 @@ public class CardPanel extends JPanel {
         playerHandDropdown = new JComboBox<>(cardNames); // Populate the dropdown with card names
         playerHandDropdown.setAlignmentX(CENTER_ALIGNMENT);
 */
-        username = new JLabel(player.getName());
+        username = new JLabel(player.getName());  //test line because easier than the hand algorithm
     }
 /*
     private JButton getPlayerHand() {

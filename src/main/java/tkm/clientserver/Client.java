@@ -142,6 +142,7 @@ public class Client implements Runnable{
             if (selectedMove != null && !selectedMove.isEmpty()) {
                 sendMessage("MOVE: " + selectedMove + "|END|");
             }
+            
         } else if(fullMessage.equals("REDRAW")) {
             main.redrawGamePanel(pieces);
         }

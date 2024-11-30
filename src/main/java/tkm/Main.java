@@ -183,7 +183,7 @@ public class Main extends JFrame {
              */
 
             // Start player's client
-            gameClient = new Client("localhost", Server.PORT, this, false);
+            gameClient = new Client(serverAddressField.getText(), Server.PORT, this, false);
             new Thread(gameClient).start();
             
             this.createStartPanel(false);
