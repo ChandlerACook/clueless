@@ -2,12 +2,10 @@
 package tkm.ui;
 
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import tkm.gamelogic.Card;
 
 /**
  *
@@ -15,11 +13,14 @@ import tkm.gamelogic.Card;
  */
 public class CardPanel extends JPanel {
     
-    private final ArrayList<Card> hand;
+    private final String[] hand;
     private final ArrayList<JButton> cardButtons;
     
-    public CardPanel(List<Card> playerHand) {
-        this.hand = (ArrayList<Card>) playerHand;
+    public CardPanel(String[] playerHand) {
+        for(String string : playerHand) {
+            System.out.println(string);
+        }
+        this.hand = playerHand;
         cardButtons = new ArrayList();
         this.initComponents();
     }
@@ -28,8 +29,8 @@ public class CardPanel extends JPanel {
         this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         this.setBorder(BorderFactory.createTitledBorder("Your Cards"));
         
-        for(Card card : hand) {
-            JButton button = new JButton(card.getName());
+        for(String card : hand) {
+            JButton button = new JButton(card);
             cardButtons.add(button);
             this.add(button);
         }
