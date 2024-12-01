@@ -2,7 +2,6 @@
 package tkm.gamelogic;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -99,8 +98,6 @@ public class GameBoard {
     }
     
     // assign players to game pieces.
-    // TO DO 
-    // add a randomization instead of 1-1 mapping.
     private void assignPlayerToGamePiece() {
         Collections.shuffle(pieces);
         for(int i = 0; i < players.size(); i++) {
