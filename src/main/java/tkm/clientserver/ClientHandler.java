@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Set;
 import javax.swing.JOptionPane;
+import tkm.gamelogic.Card;
 import tkm.gamelogic.GamePiece;
 import tkm.gamelogic.Player;
 
@@ -128,7 +129,19 @@ public class ClientHandler implements Runnable{
         else if (fullMessage.contains("START")) {
             if(this.host)
                 server.broadcast(fullMessage);
-        } 
+        }
+        
+        else if(fullMessage.contains("REQUEST_HAND")) {
+            System.out.println("Do I get here");
+            StringBuilder cardsMessage = new StringBuilder("PLAYER_CARDS:");
+            
+            for(Card card : this.player.getHand()) {
+                cardsMessage.append(card.getName()).append("|");
+            }
+            
+            cardsMessage.append("|END|");
+            sendMessage(cardsMessage.toString());
+        }
         
         // This message is recieved when a client clicks the move button, giving
         // them valid movement options to choose from

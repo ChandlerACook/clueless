@@ -7,10 +7,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import tkm.Main;
 import tkm.enums.CharacterType;
+import tkm.gamelogic.Card;
 import tkm.gamelogic.GamePiece;
 
 /**
@@ -30,10 +33,13 @@ public class Client implements Runnable{
     private BufferedReader incoming;    // getting updates from the server
     private PrintWriter outgoing;       // writing messages to the server
     private boolean host;
+    
     // Possibly bad design to pass in the whole app class, maybe just chatArea?
     private Main main;                    // Reference to game so client can update
     private int[][] tileMap;
     private ArrayList<GamePiece> pieces;
+    private Map<String, String> hallwayMap;
+    private Map<Integer, String> roomMap;
     
     // Constructor, creates a socket, and connects to the server
     public Client(String serverAddress, int port, Main main, boolean host) {
@@ -132,6 +138,11 @@ public class Client implements Runnable{
         // server data
         else if (fullMessage.startsWith("GAMEBOARD: ")) {
             this.tileMap = this.parseTileMap(fullMessage.substring(11));
+            
+            this.hallwayMap = new HashMap<>();
+            this.initializeHallwayMap();
+            this.roomMap = new HashMap<>();
+            this.initializeRoomMap();
         }
         
         // This server message is used to both create the starting game piece locations
@@ -149,7 +160,9 @@ public class Client implements Runnable{
         // This server message is used to create the client's card Panel when the
         // game starts
         else if(fullMessage.startsWith("PLAYER_CARDS:")) {
-            
+            // removes the message type, and the data separators |.
+            String[] cards = fullMessage.substring(13).split("\\|");
+            main.createCardPanel(cards);
         }
         
         // This server message is used to present the player with possible moves
@@ -157,25 +170,51 @@ public class Client implements Runnable{
         else if(fullMessage.startsWith("VALID_MOVES:")) {
             // removes the message type, and the data separators |.
             String[] moves = fullMessage.substring(12).split("\\|");
-            List<String> moveOptions = new ArrayList<>();
+            
+            // Map to hold the coordinate string as key and the location name as value
+            Map<String, String> moveOptionsMap = new HashMap<>();
+
             for (String move : moves) {
+                System.out.println(move);
                 if (!move.isEmpty()) {
-                    moveOptions.add(move);
+                    // Parse the coordinate (x, y) from the move string
+                    String[] coordinates = move.split(",");
+                    int x = Integer.parseInt(coordinates[0].trim());
+                    int y = Integer.parseInt(coordinates[1].trim());
+
+                    // Get the name of the location using your locationName() method
+                    String locationName = locationName(new int[]{x, y});
+
+                    // Add to the map: coordinate string as key, human-readable name as value
+                    moveOptionsMap.put(move, locationName);
                 }
             }
 
-            String selectedMove = (String) JOptionPane.showInputDialog(
-                    null,
-                    "Select your move:",
-                    "Move Options",
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    moveOptions.toArray(),
-                    moveOptions.get(0)
-            );
+            // Create an array of the human-readable move options
+            Object[] readableOptions = moveOptionsMap.values().toArray();
 
-            if (selectedMove != null && !selectedMove.isEmpty()) {
-                sendMessage("MOVE: " + selectedMove + "|END|");
+            // Show the JOptionPane to the user with human-readable options
+            String selectedOption = (String) JOptionPane.showInputDialog(
+                null,
+                "Select your move:",
+                "Move Options",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                readableOptions,
+                readableOptions[0]
+            );
+            
+            // Find the original coordinate string corresponding to the selected option
+            if (selectedOption != null && !selectedOption.isEmpty()) {
+                // Find the coordinate key by value (the selected human-readable name)
+                for (Map.Entry<String, String> entry : moveOptionsMap.entrySet()) {
+                    if (entry.getValue().equals(selectedOption)) {
+                        String originalCoordinate = entry.getKey();
+                        // Send the original coordinate back to the server
+                        sendMessage("MOVE: " + originalCoordinate + "|END|");
+                        break;
+                    }
+                }
             }
         } 
         // This server message tells the client to redraw their gamepanel to
@@ -183,6 +222,52 @@ public class Client implements Runnable{
         else if(fullMessage.equals("REDRAW")) {
             main.redrawGamePanel(pieces);
         }
+    }
+    
+    // Returns a location name when given coordinates
+    private String locationName(int[] location) {
+        // Check to see if the location is a hallway, if so return it
+        String key = location[0] + "," + location[1];
+        if(hallwayMap.containsKey(key))
+            return hallwayMap.get(key);
+        
+        // Must be a room
+        int room = tileMap[location[1]][location[0]];
+        if(roomMap.containsKey(room))
+            return roomMap.get(room);
+        
+        return "Error finding location name!";
+    }
+    
+    // Makes a map of the hallway coordinates to enable a string representation
+    // of player move choices
+    private void initializeHallwayMap() {
+        hallwayMap.put("3,6", "Study-Library Hallway");
+        hallwayMap.put("6,10", "Library-Billiard Room Hallway");
+        hallwayMap.put("3,13", "Library-Conservatory Hallway");
+        hallwayMap.put("6,17", "Conservatory-Ballroom Hallway");
+        hallwayMap.put("13,17", "Ballroom-Kitchen Hallway");
+        hallwayMap.put("10,13", "Ballroom-Billiard Room Hallway");
+        hallwayMap.put("13,10", "Billiard Room-Dining Room Hallway");
+        hallwayMap.put("10,6", "Billiard Room-Hall Hallway");
+        hallwayMap.put("6,3", "Study-Hall Hallway");
+        hallwayMap.put("13,3", "Hall-Lounge Hallway");
+        hallwayMap.put("17,6", "Lounge-Dining Room Hallway");
+        hallwayMap.put("17,13", "Dining Room-Kitchen Hallway");
+    }
+    
+    // Makes a map of the room types to enable string representation of player
+    // move choices.
+    private void initializeRoomMap() {
+        roomMap.put(3, "Study");
+        roomMap.put(4, "Hall");
+        roomMap.put(5, "Lounge");
+        roomMap.put(6, "Library");
+        roomMap.put(7, "Billiard Room");
+        roomMap.put(8, "Dining Room");
+        roomMap.put(9, "Conservatory");
+        roomMap.put(10, "Ballroom");
+        roomMap.put(11, "Kitchen");
     }
     
     // Used to put the string tileMap data received from the server back
@@ -235,6 +320,12 @@ public class Client implements Runnable{
         }
         return jpieces;
     }
+    
+    // Used to put the string representation of the c
+//    private void parsePlayerHand(String serializedCards) {
+//        
+//        
+//    }
 
     public boolean getHost() {
         return host;

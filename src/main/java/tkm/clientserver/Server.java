@@ -27,6 +27,7 @@ public class Server implements Runnable{
     private ServerSocket socket;
     private ExecutorService clientPool;             // Handles Client Threads concurrently
     private ArrayList<ClientHandler> clientList;    // List of all Clients on the server
+    //private Map<ClientHandler, Player> 
     private boolean acceptingClients;               // Should the server accept clients
     private GameBoard gameBoard;
     private Main main;
