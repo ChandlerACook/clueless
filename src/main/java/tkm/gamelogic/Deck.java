@@ -17,7 +17,7 @@ public class Deck {
     private ArrayList<Card> deck;       // The deck of cards
     private List<Player> players;  // List of players in the game
 
-    // Correct solution cards
+    // Case file variables (solution of the game)
     private Card correctSuspect;
     private Card correctWeapon;
     private Card correctRoom;
@@ -28,6 +28,7 @@ public class Deck {
         this.deck = new ArrayList<>();
         initializeDeck();
     }
+
     public Card getCardByName(String cardName) {
         for (Card card : deck) {
             if (card.getName().equals(cardName)) {
@@ -62,7 +63,7 @@ public class Deck {
         // Shuffle the deck
         Collections.shuffle(deck);
 
-        // Loop through the deck to select one of each card type, ensures that cards are correct type
+        // Select the case file (solution) - remove the last 3 cards as the solution
         for (Card card : deck) {
             if (card.getType() == 1 && correctSuspect == null) {
                 correctSuspect = card;
@@ -84,7 +85,7 @@ public class Deck {
         int totalCards = deck.size();
         int numPlayers = players.size();
 
-        // Check that there are players and cards in the deck before dealing, else null
+        // Ensure there are players and cards in the deck before dealing
         if (numPlayers == 0 || totalCards == 0) {
             System.out.println("Error: No players or cards to deal.");
             return;
@@ -105,25 +106,27 @@ public class Deck {
                 }
             }
 
-            // Distribute leftover cards
+            // Distribute leftover cards (if any)
             if (leftoverCards > 0 && !deck.isEmpty()) {
                 hand.add(deck.remove(0));
                 leftoverCards--;
             }
 
-            // Set the player's hand
-            player.setPlayerHand(hand);
+            // Instead of calling setPlayerHand, add cards directly to the player's hand
+            for (Card card : hand) {
+                player.addCard(card);
+            }
         }
     }
 
-    // Check if the accusation is correct
+    // Check if the accusation is correct (matching the solution)
     public boolean checkAccusation(Card suspect, Card weapon, Card room) {
         return suspect.getName().equals(correctSuspect.getName()) &&
                 weapon.getName().equals(correctWeapon.getName()) &&
                 room.getName().equals(correctRoom.getName());
     }
 
-    // Check if the suggestion is correct 
+    // Check if the suggestion is correct (matching any part of the solution)
     public boolean checkSuggestion(Card suspect, Card weapon, Card room) {
         return suspect.getName().equals(correctSuspect.getName()) ||
                 weapon.getName().equals(correctWeapon.getName()) ||
