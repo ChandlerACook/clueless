@@ -38,7 +38,7 @@ public class Deck {
         return null;  // Return null if no matching card is found
     }
 
-    // Initialize the deck with cards (suspects, weapons, rooms)
+    // Initialize the deck with cards
     private void initializeDeck() {
         // Add all cards to the deck
         String[] suspects = {"Miss Scarlet", "Professor Plum", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Kernel Mustard"};
@@ -63,7 +63,7 @@ public class Deck {
         // Shuffle the deck
         Collections.shuffle(deck);
 
-        // Select the case file (solution) - remove the last 3 cards as the solution
+        // Ensure that each card type correctly gets assigned the solution card
         for (Card card : deck) {
             if (card.getType() == 1 && correctSuspect == null) {
                 correctSuspect = card;
@@ -85,7 +85,7 @@ public class Deck {
         int totalCards = deck.size();
         int numPlayers = players.size();
 
-        // Ensure there are players and cards in the deck before dealing
+        // Check if there are players and cards to deal
         if (numPlayers == 0 || totalCards == 0) {
             System.out.println("Error: No players or cards to deal.");
             return;
@@ -112,28 +112,28 @@ public class Deck {
                 leftoverCards--;
             }
 
-            // Instead of calling setPlayerHand, add cards directly to the player's hand
+            // Add cards to player hand
             for (Card card : hand) {
                 player.addCard(card);
             }
         }
     }
 
-    // Check if the accusation is correct (matching the solution)
+    // Check if the accusation is correct 
     public boolean checkAccusation(Card suspect, Card weapon, Card room) {
         return suspect.getName().equals(correctSuspect.getName()) &&
                 weapon.getName().equals(correctWeapon.getName()) &&
                 room.getName().equals(correctRoom.getName());
     }
 
-    // Check if the suggestion is correct (matching any part of the solution)
+    // Check if the suggestion is correct 
     public boolean checkSuggestion(Card suspect, Card weapon, Card room) {
         return suspect.getName().equals(correctSuspect.getName()) ||
                 weapon.getName().equals(correctWeapon.getName()) ||
                 room.getName().equals(correctRoom.getName());
     }
 
-    // Getter for the deck (useful for testing or other purposes)
+    // Getter for the deck
     public ArrayList<Card> getDeck() {
         return deck;
     }
