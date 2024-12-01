@@ -1,11 +1,22 @@
 package tkm;
 
+import tkm.gamelogic.Card;
+import tkm.gamelogic.Player;
+import tkm.clientserver.Client;
+import tkm.clientserver.Server;
+import tkm.ui.ChatPanel;
+import tkm.ui.GamePanel;
+import tkm.ui.PlayerOptionsPanel;
+import tkm.ui.MainMenu;
+import tkm.enums.CharacterType;
+import tkm.enums.WeaponType;
+import tkm.enums.RoomType;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -14,22 +25,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-import tkm.enums.CharacterType;
-import tkm.enums.RoomType;
-import tkm.enums.WeaponType;
-import tkm.gamelogic.Card;
-import tkm.gamelogic.Deck;
 import tkm.gamelogic.GamePiece;
-import tkm.gamelogic.MakeAccusation;
-import tkm.gamelogic.MakeSuggestion;
-import tkm.gamelogic.Player;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.MainMenu;
-import tkm.ui.PlayerOptionsPanel;
+import tkm.ui.CardPanel;
 import tkm.ui.StartGamePanel;
 import tkm.ui.TitlePanel;
 
@@ -54,12 +51,13 @@ public class Main extends JFrame {
     private JPanel contentPanel;
     private JPanel optionsPanel;
     private StartGamePanel startPanel;
+    private CardPanel cardPanel;
     
     private String username;
     private Server gameServer;
     private Client gameClient;
     
-    private Deck murderDeck;
+    private MurderDeck murderDeck;
     private Player currentPlayer;
 
     public Main() {
@@ -72,7 +70,7 @@ public class Main extends JFrame {
         this.initializeComponents();
 
         // Initialize game components
-        murderDeck = new Deck(); // The solution deck for the game
+        murderDeck = new MurderDeck(); // The solution deck for the game
         //currentPlayer = new Player("Player 1"); // Example current player
 
         /*
@@ -210,6 +208,7 @@ public class Main extends JFrame {
         setupEventListeners();
         this.switchToGamePanel();
         this.gameServer.getGameBoard().startGame();
+        gameClient.sendMessage("REQUEST_HAND|END|");
     }
 
     // Send Button Action, allows a user to send a message to the chat window
@@ -237,6 +236,7 @@ public class Main extends JFrame {
                 setupEventListeners();
                 this.switchToGamePanel();
                 gamePanel.repaint();
+                gameClient.sendMessage("REQUEST_HAND|END|");
             });
         }
     }
@@ -259,6 +259,17 @@ public class Main extends JFrame {
     // however.
     public void initializeGamePanel(int[][] tileMap, ArrayList<GamePiece> pieces) {
         gamePanel = new GamePanel(tileMap, pieces);
+    }
+    
+    // This method is called on the the user's client to create their Card Panel
+    // which represents their held hand.
+    public void createCardPanel(String[] cards) {
+        cardPanel = new CardPanel(cards);
+        SwingUtilities.invokeLater(() -> {
+            this.add(cardPanel, BorderLayout.SOUTH);
+            this.revalidate();
+            this.repaint();
+        });
     }
 
     // This method is used to update the UI, in this
