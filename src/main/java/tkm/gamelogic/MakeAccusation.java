@@ -1,7 +1,5 @@
-package tkm;
+package tkm.gamelogic;
 
-import tkm.gamelogic.Card;
-import tkm.gamelogic.Player;
 import javax.swing.JOptionPane;
 
 /**
@@ -55,7 +53,7 @@ public class MakeAccusation {
     }
 
     // Performs the accusation logic and displays the result.
-    public boolean performAccusation(MurderDeck deck) {
+    public boolean performAccusation(Deck deck) {
         // Check if the accusation matches the solution in the murder deck
         boolean isCorrect = deck.checkAccusation(suspect, weapon, room);
 

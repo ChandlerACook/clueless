@@ -1,7 +1,5 @@
-package tkm;
+package tkm.gamelogic;
 
-import tkm.gamelogic.Card;
-import tkm.gamelogic.Player;
 import javax.swing.JOptionPane;
 
 /**

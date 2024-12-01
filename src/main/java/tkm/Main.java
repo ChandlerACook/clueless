@@ -1,21 +1,11 @@
 package tkm;
 
-import tkm.gamelogic.Card;
-import tkm.gamelogic.Player;
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.PlayerOptionsPanel;
-import tkm.ui.MainMenu;
-import tkm.enums.CharacterType;
-import tkm.enums.WeaponType;
-import tkm.enums.RoomType;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -24,7 +14,22 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
+import tkm.clientserver.Client;
+import tkm.clientserver.Server;
+import tkm.enums.CharacterType;
+import tkm.enums.RoomType;
+import tkm.enums.WeaponType;
+import tkm.gamelogic.Card;
+import tkm.gamelogic.Deck;
 import tkm.gamelogic.GamePiece;
+import tkm.gamelogic.MakeAccusation;
+import tkm.gamelogic.MakeSuggestion;
+import tkm.gamelogic.Player;
+import tkm.ui.ChatPanel;
+import tkm.ui.GamePanel;
+import tkm.ui.MainMenu;
+import tkm.ui.PlayerOptionsPanel;
 import tkm.ui.StartGamePanel;
 import tkm.ui.TitlePanel;
 
@@ -54,7 +59,7 @@ public class Main extends JFrame {
     private Server gameServer;
     private Client gameClient;
     
-    private MurderDeck murderDeck;
+    private Deck murderDeck;
     private Player currentPlayer;
 
     public Main() {
@@ -67,7 +72,7 @@ public class Main extends JFrame {
         this.initializeComponents();
 
         // Initialize game components
-        murderDeck = new MurderDeck(); // The solution deck for the game
+        murderDeck = new Deck(); // The solution deck for the game
         //currentPlayer = new Player("Player 1"); // Example current player
 
         /*
