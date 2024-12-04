@@ -2,6 +2,7 @@
 package tkm.clientserver;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import tkm.gamelogic.Player;
 public class Server implements Runnable{
     
     public static final int PORT = 25565;            //place holder
-    private ServerSocket socket;
+    private ServerSocket serverSocket;
     private ExecutorService clientPool;             // Handles Client Threads concurrently
     private ArrayList<ClientHandler> clientList;    // List of all Clients on the server
     private boolean acceptingClients;               // Should the server accept clients
@@ -48,7 +49,9 @@ public class Server implements Runnable{
         this.main = main;
         this.gameBoard = new GameBoard();
         try {
-            socket = new ServerSocket(PORT);
+            serverSocket = new ServerSocket();
+            InetSocketAddress serverAddress = new InetSocketAddress("localhost", PORT);
+            serverSocket.bind(serverAddress);
             clientPool = Executors.newCachedThreadPool();
             clientList = new ArrayList<>();
             // Can be used to toggle the server accepting new clients.
@@ -68,7 +71,7 @@ public class Server implements Runnable{
         try {
             // Server will accept clients until 6 people have joined
             while(acceptingClients) {
-                Socket clientSocket = socket.accept();
+                Socket clientSocket = serverSocket.accept();  //SOCKET Class
                 
                 /**
                  * TO DO
@@ -124,8 +127,8 @@ public class Server implements Runnable{
     private void shutdown() {
         try {
             // Check if server socket exists, and hasnt been closed already
-            if(socket != null && (socket.isClosed() == false)) {
-                socket.close();
+            if(serverSocket != null && (serverSocket.isClosed() == false)) {
+                serverSocket.close();
                 System.out.println("Server Socket Closed.");
             }
         } catch(IOException e) {

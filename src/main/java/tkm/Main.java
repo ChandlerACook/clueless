@@ -163,7 +163,7 @@ public class Main extends JFrame {
     private void joinGame(ActionEvent e) {
         // For creating a custom JOptionPane confirm dialog
         JTextField serverAddressField = new JTextField();
-        JTextField portField = new JTextField(Integer.toString(Server.PORT));
+        JTextField portField = new JTextField("25565");
         Object[] message = {
                 "Server IP Address: ", serverAddressField,
                 "Server Port: ", portField
@@ -183,7 +183,7 @@ public class Main extends JFrame {
              */
 
             // Start player's client
-            gameClient = new Client(serverAddressField.getText(), Server.PORT, this, false);
+            gameClient = new Client(serverAddressField.getText(), 25565, this, false);
             new Thread(gameClient).start();
             
             this.createStartPanel(false);
