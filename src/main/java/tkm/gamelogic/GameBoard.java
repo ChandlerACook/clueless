@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import tkm.clientserver.ClientHandler;
 import tkm.enums.CharacterType;
 import tkm.enums.RoomType;
 import tkm.enums.WeaponType;
@@ -31,8 +32,10 @@ public class GameBoard {
     private ArrayList<GamePiece> pieces;
     private Map<Player, List<Card>> playerHands;
     private Map<Player, GamePiece> playerPieces;
+    private Map<Player, ClientHandler> playerClients;
     //private ArrayList<BufferedImage> images;
-    private int currentTurn;
+    private int currentTurn = 0;
+    
     private static final int TILEMAP[][] = {
             {0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0,  0,  0,  0,  0, 0},
             {0, 3, 3, 3, 3, 0, 0, 0,  4,  4,  4,  4, 0, 0, 0,  5,  5,  5,  5, 0},
@@ -65,6 +68,7 @@ public class GameBoard {
        
        playerHands = new HashMap<>();
        playerPieces = new HashMap<>();
+       playerClients = new HashMap<>();
        
        
        this.createGamePieces();
@@ -81,20 +85,122 @@ public class GameBoard {
         //Shuffle the deck
         Collections.shuffle(deck);
         this.createCaseFile();
+        System.out.println(this.caseFileToString());
         // Shuffle the players, in effect creating a turn order.
-        // TO-DO check the player shuffling, something doesnt work here.
         Collections.shuffle(players);
         this.assignPlayerToGamePiece();
         this.dealCards();
+        
+        // Tell the first player it is their turn
+        playerClients.get(players.get(0)).sendMessage("YOUR_TURN|END|");
+        
+        // Let the other players know whose turn it is
+        for(int i = 1; i < players.size(); i++) {
+            playerClients.get(players.get(i)).sendMessage("PLAYERS_TURN: " 
+                    + players.get(0).getName() + "|END|");
+        }
         
         // for debugging
         for(Player player : players)
             System.out.println(player.toString());
     }
     
+    // This method increments the turn
+    public void nextTurn() {
+        this.currentTurn = (currentTurn + 1) % players.size();
+        
+        System.out.println("Current Turn: " + currentTurn);
+        
+        playerClients.get(players.get(currentTurn)).sendMessage("YOUR_TURN|END|");
+        
+        for(int i = 0; i < players.size(); i++) {
+            if(i != currentTurn)
+                playerClients.get(players.get(i)).sendMessage("PLAYERS_TURN: " 
+                        + players.get(currentTurn).getName() + "|END|");
+        }
+    }
+    
+    // This method handles a player making a suggestion
+    public void handleSuggestion(String[] suggestion, Player player) {
+        int nextPlayer = currentTurn + 1;
+        
+        // if the suspect is not the players character, update the suspects
+        // position
+        if(player.getCharacter().getName().equals(suggestion[0]) == false) {
+
+            int roomNumber = this.getRoomNumber(suggestion[2]);
+            int[] move = this.findFirstUnoccupiedTile(roomNumber);
+
+            for(GamePiece piece : pieces) {
+                if(piece.getCharacter().getName().equals(suggestion[0])) {
+                    piece.setPosition(move[0], move[1]);
+                    break;
+                }
+            }
+        }
+        
+        
+        StringBuilder disprove = new StringBuilder("DISPROVE: ");
+        
+        while(nextPlayer % players.size() != currentTurn) {
+            for(String suggest : suggestion) {
+                if(players.get(nextPlayer % players.size()).hasCard(suggest)) {
+                    disprove.append(suggest).append("|");
+                }
+            }
+            // This means the nextPlayer has a card to disprove
+            if(disprove.length() > 10) {
+                disprove.append("|END|");
+                playerClients.get(players.get(nextPlayer % players.size())).sendMessage(disprove.toString());
+                return;
+            }
+            nextPlayer++;
+        }
+        
+        // None had the cards from the current suggestion, let the current player
+        // know.
+        playerClients.get(players.get(currentTurn)).sendMessage("NONE|END|");
+    }
+    
+    private int getRoomNumber(String roomName) {
+        switch(roomName) {
+            case "Study" -> {
+                return 3;
+            }
+            case "Hall" -> {
+                return 4;
+            }
+            case "Lounge" -> {
+                return 5;
+            }
+            case "Library" -> {
+                return 6;
+            }
+            case "Billiard Room" -> {
+                return 7;
+            }
+            case "Dining Room" -> {
+                return 8;
+            }
+            case "Conservatory" -> {
+                return 9;
+            }
+            case "Ballroom" -> {
+                return 10;
+            }
+            case "Kitchen" -> {
+                return 11;
+            }
+        }
+        // Something bad Happend here!!
+        System.out.println("Something wrong with suggestion message(getRoomNumber method)");
+        return 0;
+    }
+    
     // Adds a player/client to the GameState
-    public void addPlayer(Player player) {
+    public void addPlayer(Player player, ClientHandler client) {
         players.add(player);
+        playerClients.put(player, client);
     }
     
     // assign players to game pieces.
@@ -377,6 +483,10 @@ public class GameBoard {
     
     public List<Card> getPlayerCards(Player player) {
         return playerHands.get(player);
+    }
+    
+    public ClientHandler getCurrentClient() {
+        return playerClients.get(players.get(currentTurn));
     }
     
     // For debugging, prints a string representation of the deck

@@ -20,6 +20,14 @@ public class Player {
         this.gamePiece.setPosition(x, y);
     }
     
+    public boolean hasCard(String cardName) {
+        for(Card card : hand) {
+            if(card.getName().equals(cardName))
+                return true;
+        }
+        return false;
+    }
+    
     public String getName() {
         return name;
     }
