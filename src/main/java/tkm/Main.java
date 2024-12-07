@@ -1,22 +1,11 @@
 package tkm;
 
-import tkm.gamelogic.Card;
-import tkm.gamelogic.Player;
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.PlayerOptionsPanel;
-import tkm.ui.MainMenu;
-import tkm.enums.CharacterType;
-import tkm.enums.WeaponType;
-import tkm.enums.RoomType;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -25,11 +14,24 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
+import tkm.clientserver.Client;
+import tkm.clientserver.Server;
+import tkm.enums.CharacterType;
+import tkm.enums.RoomType;
+import tkm.enums.WeaponType;
+import tkm.gamelogic.Card;
+import tkm.gamelogic.Deck;
 import tkm.gamelogic.GamePiece;
+import tkm.gamelogic.MakeAccusation;
+import tkm.gamelogic.Player;
 import tkm.ui.CardPanel;
+import tkm.ui.ChatPanel;
+import tkm.ui.GamePanel;
+import tkm.ui.MainMenu;
+import tkm.ui.PlayerOptionsPanel;
 import tkm.ui.StartGamePanel;
 import tkm.ui.TitlePanel;
-
 /**
  * App class serves as the main controller for the game by
  * initializing all necessary components, setting up the UI,
@@ -57,7 +59,7 @@ public class Main extends JFrame {
     private Server gameServer;
     private Client gameClient;
     
-    private MurderDeck murderDeck;
+    private Deck murderDeck;
     private Player currentPlayer;
 
     public Main() {
@@ -70,7 +72,7 @@ public class Main extends JFrame {
         this.initializeComponents();
 
         // Initialize game components
-        murderDeck = new MurderDeck(); // The solution deck for the game
+        murderDeck = new Deck(); // The solution deck for the game
         //currentPlayer = new Player("Player 1"); // Example current player
 
         /*
@@ -142,8 +144,9 @@ public class Main extends JFrame {
             gameServer = new Server(this);
             new Thread(gameServer).start();
 
+            // Reference: https://stackoverflow.com/questions/55198388/using-public-ip-address-in-sockets
             // Start the host's client
-            gameClient = new Client("localhost", Server.PORT, this, true);
+            gameClient = new Client("0.0.0.0", Server.PORT, this, true);
             new Thread(gameClient).start();
 
             gamePanel = new GamePanel(gameServer.getGameBoard().getTileMap(), 
@@ -160,7 +163,7 @@ public class Main extends JFrame {
         JTextField serverAddressField = new JTextField();
         JTextField portField = new JTextField(Integer.toString(Server.PORT));
         Object[] message = {
-                "Server IP Address: ", serverAddressField,
+                "Server Public IP Address: ", serverAddressField,
                 "Server Port: ", portField
         };
 
@@ -178,7 +181,7 @@ public class Main extends JFrame {
              */
 
             // Start player's client
-            gameClient = new Client("localhost", Server.PORT, this, false);
+            gameClient = new Client(serverAddressField.getText(), 25565, this, false);
             new Thread(gameClient).start();
             
             this.createStartPanel(false);
