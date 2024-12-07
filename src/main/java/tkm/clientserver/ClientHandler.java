@@ -58,16 +58,16 @@ public class ClientHandler implements Runnable{
             */
             
             // Asks for the host's username
-            username = JOptionPane.showInputDialog(null, "Enter your username:");
-            player = new Player(username);
-            server.getGameBoard().addPlayer(player);
-            
-            // Updates the player count when a player joins and sends them the starting
-            // state
-            server.broadcast("PLAYERJOINED: " + server.getClientListSize() + "|END|");
-            server.broadcast("GAMEBOARD: " + server.getGameBoard().stringTileMap() + "|END|", this);
-            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|", this);
-            server.broadcast("INITIALIZE" + "|END|", this);
+//            username = JOptionPane.showInputDialog(null, "Enter your username:");
+//            player = new Player(username);
+//            server.getGameBoard().addPlayer(player);
+//            
+//            // Updates the player count when a player joins and sends them the starting
+//            // state
+//            server.broadcast("PLAYERJOINED: " + server.getClientListSize() + "|END|");
+//            server.broadcast("GAMEBOARD: " + server.getGameBoard().stringTileMap() + "|END|", this);
+//            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|", this);
+//            server.broadcast("INITIALIZE" + "|END|", this);
             /*
             This reads any messages that are incoming from the client
             */
@@ -118,29 +118,15 @@ public class ClientHandler implements Runnable{
     private void handleClientMessage(String fullMessage) {
         // Removing the "|END|" from the message
         //fullMessage = fullMessage.replace("|END|", "").trim();
-        //System.out.println(fullMessage);
+        System.out.println(fullMessage);
 
         // Update chat if a chat message comes from the server
         if (fullMessage.startsWith("CHAT: ")) {
             server.broadcast(username + ": " + fullMessage); // Broadcast chat messages to all clients
-        } 
-        
-        // This is used to start the game, with only the host being allowed to do it
-        else if (fullMessage.contains("START")) {
-            if(this.host)
-                server.broadcast(fullMessage);
         }
         
-        else if(fullMessage.contains("REQUEST_HAND")) {
-            System.out.println("Do I get here");
-            StringBuilder cardsMessage = new StringBuilder("PLAYER_CARDS:");
-            
-            for(Card card : this.player.getHand()) {
-                cardsMessage.append(card.getName()).append("|");
-            }
-            
-            cardsMessage.append("|END|");
-            sendMessage(cardsMessage.toString());
+        else if(fullMessage.contains("END_TURN")) {
+            server.getGameBoard().nextTurn();
         }
         
         // This message is recieved when a client clicks the move button, giving
@@ -162,7 +148,60 @@ public class ClientHandler implements Runnable{
         // their choice and the server updates and broadcasts.
         else if(fullMessage.startsWith("MOVE: ")) {
             this.handleMove(fullMessage);
-        } 
+        }
+        
+        // Once a client makes a suggestion, the server must decide which player,
+        // if any of them, have cards to show the client.
+        else if(fullMessage.contains("SUGGESTION:")) {
+            String message = fullMessage.replace("SUGGESTION:", "").replace("|END|", "").trim();
+            
+            String[] suggestion = message.split("\\|");
+            
+            server.getGameBoard().handleSuggestion(suggestion, player);
+            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
+            server.broadcast("REDRAW|END|");
+        }
+        
+        else if(fullMessage.contains("CARD_REVEAL:")) {
+            String message = fullMessage.replace("|END|", "");
+            message += "|" + this.username + "|END|";
+            server.getGameBoard().getCurrentClient().sendMessage(message);
+        }
+        
+        // This message sends out the Player's Hand information, allowing the UI
+        // to show their hand correctly.
+        else if(fullMessage.contains("REQUEST_HAND")) {
+            StringBuilder cardsMessage = new StringBuilder("PLAYER_CARDS:");
+            
+            for(Card card : this.player.getHand()) {
+                cardsMessage.append(card.getName()).append("|");
+            }
+            
+            cardsMessage.append("|END|");
+            sendMessage(cardsMessage.toString());
+        }
+        
+        // Once a client joins the server it sends its username, allowing the 
+        // server to add them to the gameboard.
+        else if(fullMessage.contains("PLAYER:")) {
+            this.username = fullMessage.replace("PLAYER:", "").replace("|END|", "").trim();
+            
+            player = new Player(username);
+            server.getGameBoard().addPlayer(player, this);
+            
+            // Updates the player count when a player joins and sends them the starting
+            // state
+            server.broadcast("PLAYERJOINED: " + server.getClientListSize() + "|END|");
+            server.broadcast("GAMEBOARD: " + server.getGameBoard().stringTileMap() + "|END|", this);
+            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|", this);
+            server.broadcast("INITIALIZE" + "|END|", this);
+        }
+        
+        // This is used to start the game, with only the host being allowed to do it
+        else if (fullMessage.contains("START")) {
+            if(this.host)
+                server.broadcast(fullMessage);
+        }
         
         // An unknown client message was received
         else {
@@ -190,5 +229,9 @@ public class ClientHandler implements Runnable{
                 System.out.println("Invalid move coordinates from client: " + message);
             }
         }
+    }
+    
+    public Player getPlayer() {
+        return player;
     }
 }

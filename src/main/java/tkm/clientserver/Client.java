@@ -8,12 +8,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import tkm.Main;
 import tkm.enums.CharacterType;
-import tkm.gamelogic.Card;
 import tkm.gamelogic.GamePiece;
 
 /**
@@ -65,7 +63,10 @@ public class Client implements Runnable{
     // This controls what happens while the client is connected.
     @Override
     public void run() {
-        //Updating a clients chat window, if there are any changes from the server
+        
+        String username = JOptionPane.showInputDialog(null, "Enter your username:");
+        this.sendMessage("PLAYER:" + username + "|END|");
+        
         try {
         
             StringBuilder messageBuffer = new StringBuilder();
@@ -123,6 +124,49 @@ public class Client implements Runnable{
         if (fullMessage.contains("CHAT: ")) {
             main.updateChat(fullMessage.replace("CHAT: ", ""));
         } 
+        
+        // Tells the client it is their turn, enabling turn based options.
+        else if(fullMessage.contains("YOUR_TURN")) {
+            JOptionPane.showMessageDialog(main, "It is your turn!");
+            main.getOptionsPanel().enableSwitch(true);
+        }
+        
+        else if(fullMessage.contains("PLAYERS_TURN:")) {
+            String username = fullMessage.replace("PLAYERS_TURN:", "").trim();
+            JOptionPane.showMessageDialog(main, "It is " + username + "'s turn.");
+        }
+        
+        else if(fullMessage.contains("DISPROVE:")) {
+            String message = fullMessage.replace("DISPROVE: ", "").trim();
+            
+            String[] options = message.split("\\|");
+            
+            String selectedOption = (String) JOptionPane.showInputDialog(
+                    null, 
+                    "Disprove the Suggestion",
+                    "Pick a Card to Reveal",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+            
+            sendMessage("CARD_REVEAL: " + selectedOption + "|END|");
+            
+        }
+        
+        // If the client makes a suggestion and no player can disprove it
+        else if(fullMessage.contains("NONE")) {
+            JOptionPane.showMessageDialog(null, "No Players could disprove your suggestion!");
+        }
+        
+        else if(fullMessage.contains("CARD_REVEAL:")) {
+            String message = fullMessage.replace("CARD_REVEAL:", "").trim();
+            
+            String[] options = message.split("\\|");
+            
+            JOptionPane.showMessageDialog(null, options[1] + " shows you the " 
+                    + options[0] + " card.");
+        }
         
         // Updates the amount of players that have joined in the lobby
         else if (fullMessage.startsWith("PLAYERJOINED: ")) {
@@ -320,12 +364,6 @@ public class Client implements Runnable{
         }
         return jpieces;
     }
-    
-    // Used to put the string representation of the c
-//    private void parsePlayerHand(String serializedCards) {
-//        
-//        
-//    }
 
     public boolean getHost() {
         return host;
