@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Set;
+import javax.swing.JOptionPane;
+import tkm.gamelogic.Card;
+import tkm.gamelogic.GamePiece;
+import tkm.gamelogic.Player;
 
 /**
  * @file ClientHandler.java
@@ -22,14 +27,19 @@ public class ClientHandler implements Runnable{
     private BufferedReader incoming;    // Handles incoming information from client
     private PrintWriter outgoing;       // Handles sending info to client
     private Server server;              // server that uses this Handler
+    private Player player;
+    private String username;
+    private boolean host;
     
-    public ClientHandler(Socket clientSocket, Server server) {
+    public ClientHandler(Socket clientSocket, Server server, boolean host) {
+        this.host = host;
         this.clientSocket = clientSocket;
         /**
          * TO DO
          * add a variable to keep track of the current gamestate
          */
         this.server = server;
+        //this.username = username;
     }
     
     @Override
@@ -47,25 +57,37 @@ public class ClientHandler implements Runnable{
             * 
             */
             
+            // Asks for the host's username
+//            username = JOptionPane.showInputDialog(null, "Enter your username:");
+//            player = new Player(username);
+//            server.getGameBoard().addPlayer(player);
+//            
+//            // Updates the player count when a player joins and sends them the starting
+//            // state
+//            server.broadcast("PLAYERJOINED: " + server.getClientListSize() + "|END|");
+//            server.broadcast("GAMEBOARD: " + server.getGameBoard().stringTileMap() + "|END|", this);
+//            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|", this);
+//            server.broadcast("INITIALIZE" + "|END|", this);
             /*
             This reads any messages that are incoming from the client
             */
-            String message;
-            while ((message = incoming.readLine()) != null) {               
-                System.out.println("Received from client: " + message);
-                
-                // Check for correct messages, currently only "CHAT: " can come
-                // in
-                if (message.startsWith("CHAT: ")) {
-                    // trims CHAT: from message
-                    server.broadcast(message.substring(6)); // Broadcast chat messages to all clients
-                } else {
-                    outgoing.println("Unknown command: " + message);
+
+            StringBuilder messageBuffer = new StringBuilder();
+            String line;
+        
+            while ((line = incoming.readLine()) != null) {
+                messageBuffer.append(line).append("\n");
+
+                // If we receive the end delimiter, process the full message
+                if (line.contains("|END|")) {
+                    String fullMessage = messageBuffer.toString();
+                    messageBuffer.setLength(0); // Clear buffer after processing
+                    handleClientMessage(fullMessage);
                 }
             }
             
         } catch(IOException e) {
-            System.out.println("Client handler encounterd an issue: " 
+            System.out.println("Client handler encountered an issue: " 
                     + e.getMessage());
         } finally {
             /*
@@ -85,5 +107,141 @@ public class ClientHandler implements Runnable{
     // For sending a message from the server to this client being handled
     public void sendMessage(String message) {
         outgoing.println(message);
+    }
+    
+    /*
+    This is the important method in the Client Handler, as it decides what to do
+    when receiving messages from the connected clients. Anytime you want a client
+    to do a change on their end and have it reflected on everyones machine, you 
+    have to first send the message on the client side and then process it here.
+    */
+    private void handleClientMessage(String fullMessage) {
+        // Removing the "|END|" from the message
+        //fullMessage = fullMessage.replace("|END|", "").trim();
+        System.out.println(fullMessage);
+
+        // Update chat if a chat message comes from the server
+        if (fullMessage.startsWith("CHAT: ")) {
+            server.broadcast(username + ": " + fullMessage); // Broadcast chat messages to all clients
+        }
+        
+        else if(fullMessage.contains("END_TURN")) {
+            server.getGameBoard().nextTurn();
+        }
+        
+        // This message is recieved when a client clicks the move button, giving
+        // them valid movement options to choose from
+        else if(fullMessage.contains("REQUEST_MOVES")) {
+            GamePiece piece = server.getGameBoard().getPlayerGamePiece(player);
+            Set<int[]> validMoves = server.getGameBoard().generateValidMoves(piece);
+            StringBuilder movesMessage = new StringBuilder("VALID_MOVES:");
+
+            for (int[] move : validMoves) {
+                movesMessage.append(move[0]).append(",").append(move[1]).append("|");
+            }
+            movesMessage.append("|END|");
+            sendMessage(movesMessage.toString());
+            
+        } 
+        
+        // Once a client chooses a valid move option, they send a message with
+        // their choice and the server updates and broadcasts.
+        else if(fullMessage.startsWith("MOVE: ")) {
+            this.handleMove(fullMessage);
+        }
+        
+        // Once a client makes a suggestion, the server must decide which player,
+        // if any of them, have cards to show the client.
+        else if(fullMessage.contains("SUGGESTION:")) {
+            String message = fullMessage.replace("SUGGESTION:", "").replace("|END|", "").trim();
+
+            String[] suggestion = message.split("\\|");
+
+            server.getGameBoard().handleSuggestion(suggestion, player);
+            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
+            server.broadcast("REDRAW|END|");
+        }
+
+        else if(fullMessage.contains("ACCUSATION:")) {
+            String message = fullMessage.replace("ACCUSATION:", "").replace("|END|", "").trim();
+
+            String[] suggestion = message.split("\\|");
+
+          //  server.getGameBoard().handleAccusation(accusation, player);
+            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
+            server.broadcast("REDRAW|END|");
+        }
+        
+        else if(fullMessage.contains("CARD_REVEAL:")) {
+            String message = fullMessage.replace("|END|", "");
+            message += "|" + this.username + "|END|";
+            server.getGameBoard().getCurrentClient().sendMessage(message);
+        }
+        
+        // This message sends out the Player's Hand information, allowing the UI
+        // to show their hand correctly.
+        else if(fullMessage.contains("REQUEST_HAND")) {
+            StringBuilder cardsMessage = new StringBuilder("PLAYER_CARDS:");
+            
+            for(Card card : this.player.getHand()) {
+                cardsMessage.append(card.getName()).append("|");
+            }
+            
+            cardsMessage.append("|END|");
+            sendMessage(cardsMessage.toString());
+        }
+        
+        // Once a client joins the server it sends its username, allowing the 
+        // server to add them to the gameboard.
+        else if(fullMessage.contains("PLAYER:")) {
+            this.username = fullMessage.replace("PLAYER:", "").replace("|END|", "").trim();
+            
+            player = new Player(username);
+            server.getGameBoard().addPlayer(player, this);
+            
+            // Updates the player count when a player joins and sends them the starting
+            // state
+            server.broadcast("PLAYERJOINED: " + server.getClientListSize() + "|END|");
+            server.broadcast("GAMEBOARD: " + server.getGameBoard().stringTileMap() + "|END|", this);
+            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|", this);
+            server.broadcast("INITIALIZE" + "|END|", this);
+        }
+        
+        // This is used to start the game, with only the host being allowed to do it
+        else if (fullMessage.contains("START")) {
+            if(this.host)
+                server.broadcast(fullMessage);
+        }
+        
+        // An unknown client message was received
+        else {
+            outgoing.println("Unknown command: " + fullMessage);
+        }
+    }
+    
+    // This method receives the movement choice from the player, and updates
+    // the game board accordingly. After the update, the server broadcasts the
+    // change to all clients.
+    private void handleMove(String message) {
+        //System.out.println(message);
+        message = message.replace("MOVE: ", "").replace("|END|", "").trim();
+        String[] coordinates = message.split(",");
+        if (coordinates.length == 2) {
+            try {
+                int x = Integer.parseInt(coordinates[0]);
+                int y = Integer.parseInt(coordinates[1]);
+
+                // Move the player on the game board
+                server.getGameBoard().movePlayer(player, x, y);
+                server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
+                server.broadcast("REDRAW|END|");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid move coordinates from client: " + message);
+            }
+        }
+    }
+    
+    public Player getPlayer() {
+        return player;
     }
 }

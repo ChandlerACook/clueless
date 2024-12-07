@@ -1,29 +1,36 @@
-
 package tkm;
 
-import tkm.Player;
-import tkm.clientserver.Client;
-import tkm.clientserver.Server;
-import tkm.gamelogic.GameBoard;
-import tkm.ui.ChatPanel;
-import tkm.ui.GamePanel;
-import tkm.ui.PlayerOptionsPanel;
-import tkm.ui.MainMenu;
-import tkm.ui.CardPanel;
-import tkm.enums.CharacterType;
-import tkm.enums.WeaponType;
-import tkm.enums.RoomType;
-import tkm.gamelogic.Deck;
+import tkm.gamelogic.Player;
+import tkm.ui.*;
+import tkm.clientserver.*;
+import tkm.enums.*;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import javax.swing.*;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+
+/**
+ * App class serves as the main controller for the game by
+ * initializing all necessary components, setting up the UI,
+ * and handling key game actions through event listeners.
+ */
+
+/**
+ * 11/8/2024 verison - justin
+ * integration of making suggestions/accusations
+ */
 
 public class Main extends JFrame {
 
@@ -31,61 +38,54 @@ public class Main extends JFrame {
     private GamePanel gamePanel;
     private ChatPanel chatPanel;
     private PlayerOptionsPanel pOptionsPanel;
+    private TitlePanel titlePanel;
     private JPanel contentPanel;
     private JPanel optionsPanel;
-    private String character;
+    private StartGamePanel startPanel;
+    private CardPanel cardPanel;
+    
     private String username;
     private Server gameServer;
     private Client gameClient;
-    private GameBoard gameBoard;
-    private CardPanel cardPanel;
-    private Deck deck;
-    private List<Player> playersList;
-    private Player player;
-    private JLabel characterLabel;
+
+    private Player currentPlayer;
 
     public Main() {
-        // Initialize UI components
         mainMenu = new MainMenu();
         chatPanel = new ChatPanel();
         pOptionsPanel = new PlayerOptionsPanel();
+        titlePanel = new TitlePanel();
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
-        characterLabel = new JLabel("Character: Not Assigned");
-
-        // Initialize players and Deck
-        playersList = new ArrayList<>(); // Initialize the players list
-        player = new Player(username, character);
-        playersList.add(player);
-
-        // Initialize the Deck with players list
-        deck = new Deck(playersList);
-        deck.dealCards();
-
-        gameBoard = new GameBoard(playersList); // Initialize GameBoard with players list
-        gamePanel = new GamePanel(playersList);
-
-        // Initialize player hand (Make sure player is initialized before accessing hand)
-        List<Card> playerHandCards = player.getPlayerHand();
-        if (playerHandCards != null) {
-            cardPanel = new CardPanel(playerHandCards); // Pass List<Card> to CardPanel constructor
-        } else {
-            cardPanel = new CardPanel(new ArrayList<>()); // Default to empty list if no hand
-        }
-
         this.initializeComponents();
 
-        // Add action listeners
-        mainMenu.getExitGameButton().addActionListener(this::exit);
-        mainMenu.getHostGameButton().addActionListener(this::hostGame);
-        mainMenu.getJoinGameButton().addActionListener(this::joinGame);
+        /*
+         *TO DO
+         * Bring listener creation into their respective classes, maybe make
+         * the UI stuff protected instead of private to enable access.
+         */
 
-        chatPanel.getSendButton().addActionListener(this::send);
+        mainMenu.getExitGameButton().addActionListener((ActionEvent e) -> {
+            this.exit(e);
+        });
 
-        setupEventListeners();
+        mainMenu.getHostGameButton().addActionListener((ActionEvent e) -> {
+            this.hostGame(e);
+        });
+
+        mainMenu.getJoinGameButton().addActionListener((ActionEvent e) -> {
+            this.joinGame(e);
+        });
+
+        chatPanel.getSendButton().addActionListener((ActionEvent e) -> {
+            this.send(e);
+        });
+
     }
 
+    // Initializes the App Window, and creates the UI.
     private void initializeComponents() {
+
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setTitle("Clue-Less");
@@ -94,84 +94,55 @@ public class Main extends JFrame {
         optionsPanel.setLayout(new GridLayout(0, 1, 5, 20));
         optionsPanel.add(mainMenu);
         optionsPanel.add(chatPanel);
-
-
         chatPanel.setVisible(false);
 
         // Setup the content panel
         contentPanel.setLayout(new BorderLayout(5, 5));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10 , 10));
-
         contentPanel.add(optionsPanel, BorderLayout.WEST);
-        contentPanel.add(gamePanel, BorderLayout.CENTER);
+        contentPanel.add(titlePanel, BorderLayout.CENTER);
 
         this.add(contentPanel);
+
         this.pack();
         this.setLocationRelativeTo(null);
     }
 
-    private void switchToPOPanel() {
-        optionsPanel.remove(mainMenu);
-
-        // Get List<Card> from the player's hand
-        List<Card> playerHandCards = player.getPlayerHand(); // This returns List<Card>
-        if (playerHandCards != null) {
-            cardPanel = new CardPanel(playerHandCards); // Pass List<Card> to CardPanel constructor
-        } else {
-            cardPanel = new CardPanel(new ArrayList<>()); // Default to empty list if no hand
-        }
-
-        optionsPanel.add(characterLabel);
-        optionsPanel.add(pOptionsPanel, 0);
-        optionsPanel.add(cardPanel);
-        cardPanel.setBackground(Color.CYAN);
-
-        optionsPanel.revalidate();
-        optionsPanel.repaint();
-    }
-
+    // Exit Button Action, exits from application
     private void exit(ActionEvent e) {
         System.exit(0);
     }
 
+    // Host Game Button Action, sets up a server and a client for the host, and
+    // should proceed to the game lobby or panel.
     private void hostGame(ActionEvent e) {
-        username = JOptionPane.showInputDialog(this, "Enter your username:");
 
-        if (username != null && !username.isEmpty()) {
-            String[] availableCharacters = {"Miss Scarlet", "Col. Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"};
+        /*
+        TO DO
+        Add check for empty username
+        Way for user to back out of hostgame without making a server
+        */
 
-            // Convert the array to a List for easier removal
-            List<String> availableCharacterList = new ArrayList<>(List.of(availableCharacters));
-
-            // Ensure the player has a unique character
-            Random random = new Random();
-            String randomCharacter = availableCharacterList.get(random.nextInt(availableCharacterList.size()));
-            player = new Player(username, randomCharacter);
-            characterLabel.setText("Character: " + player.getCharacter());
-            availableCharacterList.remove(randomCharacter);
-
-            // Add the player to the players list
-            playersList = new ArrayList<>();
-            playersList.add(player);
-
-            // Initialize the server, client, and game components
-            gameServer = new Server();
+        //if(username != null) {
+            // Start the host's server on a new Thread
+            gameServer = new Server(this);
             new Thread(gameServer).start();
 
-            gameClient = new Client("localhost", Server.PORT, username, this);
+            // Start the host's client
+            gameClient = new Client("localhost", Server.PORT, this, true);
             new Thread(gameClient).start();
 
-            // Initialize deck and game state
-            deck = new Deck(playersList);
-            deck.dealCards();
-
-            // Make the chat panel visible and switch to player options panel
-            chatPanel.setVisible(true);
-            this.switchToPOPanel();
-        }
+            gamePanel = new GamePanel(gameServer.getGameBoard().getTileMap(), 
+                    gameServer.getGameBoard().getGamePieces());
+            
+            this.createStartPanel(true);
+        //}
     }
 
+    // Join Game Button Action, allows a user to join a host's server, proceed
+    // to lobby/gameboard
     private void joinGame(ActionEvent e) {
+        // For creating a custom JOptionPane confirm dialog
         JTextField serverAddressField = new JTextField();
         JTextField portField = new JTextField(Integer.toString(Server.PORT));
         Object[] message = {
@@ -179,49 +150,187 @@ public class Main extends JFrame {
                 "Server Port: ", portField
         };
 
+        // Whether the user accepts or cancels joining the server.
         int option = JOptionPane.showConfirmDialog(this, message, "Join Game",
                 JOptionPane.OK_CANCEL_OPTION);
 
+        // Player accepts joining the server
         if(option == JOptionPane.OK_OPTION) {
-            username = JOptionPane.showInputDialog(this, "Enter your username:");
 
-            gameClient = new Client("localhost", Server.PORT, username, this);
+            /* TO DO
+             * Add way for user to specify serverAddress and port from dialog box
+             * Change client initialization below to use inputted fields
+             * Add check for empty username
+             */
+
+            // Start player's client
+            gameClient = new Client("localhost", Server.PORT, this, false);
             new Thread(gameClient).start();
-
-            chatPanel.setVisible(true);
-            this.switchToPOPanel();
+            
+            this.createStartPanel(false);
         }
     }
+    
+    // This creates the lobby area based on whether the user is the host or not
+    // If they are the host, they have the capability to start the game.
+    private void createStartPanel(boolean host) {
+        startPanel = new StartGamePanel(host);
+            
+            startPanel.getStartGameButton().addActionListener((ActionEvent ev) -> {
+                this.start(ev);
+            });
+            
+        this.switchToStartGamePanel();
+    }
+    
+    // Start Game Action, allows a host user to start the game when they feel 
+    // ready to start.
+    private void start(ActionEvent e) {
+        //Let joined players know the game has started
+        gameClient.sendMessage("START " + "|END|");
+        chatPanel.setVisible(true);
+        this.switchToPOPanel();
+        // Set up event listeners for player options
+        setupEventListeners();
+        this.switchToGamePanel();
+        this.gameServer.getGameBoard().startGame();
+        gameClient.sendMessage("REQUEST_HAND|END|");
+    }
 
+    // Send Button Action, allows a user to send a message to the chat window
     private void send(ActionEvent e) {
+
+        // Get input from chatInput textfield in chatPanel
         String message = chatPanel.getChatInput().getText();
-        if(!message.isEmpty()) {
-            gameClient.sendMessage("CHAT: " + username + ": " + message);
+        // Only send a message if its not empty
+        if(message.isEmpty() == false) {
+            gameClient.sendMessage("CHAT: " + message + "|END|");
             chatPanel.getChatInput().setText("");
         }
     }
+    
+    // This method is used to start the game for non-Host players, as they do not
+    // have the option to start the game and therefore need to be triggered to 
+    // move to the start of the game when the host starts. This method is called
+    // when the server sends out the message.
+    public void startGameForJoinedPlayers() {
+        if(gameClient.getHost() == false) {
+            SwingUtilities.invokeLater(() -> {
+                chatPanel.setVisible(true);
+                this.switchToPOPanel();
+                // Set up event listeners for player options
+                setupEventListeners();
+                this.switchToGamePanel();
+                gamePanel.repaint();
+                gameClient.sendMessage("REQUEST_HAND|END|");
+            });
+        }
+    }
 
+    // Adds the players message to the chat area. SwingUtilities was used to ensure
+    // Thread safety, and is required when using swing and multiple threads
     public void updateChat(String message) {
         SwingUtilities.invokeLater(() -> chatPanel.getChatArea().append(message + "\n"));
     }
+    
+    
+    // This method updates the lobby panel to show the amount of connected players
+    // It receives this information from the server each time someone joins.
+    public void updatePlayerCount(int count) {
+        SwingUtilities.invokeLater(() -> startPanel.updatePlayerCount(count));
+    }
+    
+    // This method is used to create the starting gamepanel for clients, based
+    // on the servers gameBoard data. It will always be the same in this case
+    // however.
+    public void initializeGamePanel(int[][] tileMap, ArrayList<GamePiece> pieces) {
+        gamePanel = new GamePanel(tileMap, pieces);
+    }
+    
+    // This method is called on the the user's client to create their Card Panel
+    // which represents their held hand.
+    public void createCardPanel(String[] cards) {
+        cardPanel = new CardPanel(cards);
+        SwingUtilities.invokeLater(() -> {
+            this.add(cardPanel, BorderLayout.SOUTH);
+            this.revalidate();
+            this.repaint();
+        });
+    }
+
+    // This method is used to update the UI, in this
+    // case proceeding to the lobby.
+    private void switchToStartGamePanel() {
+        optionsPanel.remove(mainMenu);
+        optionsPanel.add(startPanel, 0);
+        
+        optionsPanel.revalidate();
+        optionsPanel.repaint();
+    }
+    
+    // Switches from the main menu panel to the player options panel
+    private void switchToPOPanel() {
+        optionsPanel.remove(startPanel);
+        optionsPanel.add(pOptionsPanel, 0);
+
+        optionsPanel.revalidate();
+        optionsPanel.repaint();
+    }
+    
+    // Switches from the title screen to the gameboard screen
+    private void switchToGamePanel() {
+        contentPanel.remove(titlePanel);
+        contentPanel.add(gamePanel, BorderLayout.CENTER);
+        
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+    
+    // This method is used to redraw the gamePanel anytime there is a change in
+    // player/weapon location. TO-DO add weapon locations
+    public void redrawGamePanel(ArrayList<GamePiece> pieces) {
+        SwingUtilities.invokeLater(() -> {
+            this.gamePanel.setGamePieces(pieces);
+            gamePanel.revalidate();
+            gamePanel.repaint();
+        });
+    }
+    
+    public PlayerOptionsPanel getOptionsPanel() {
+        return this.pOptionsPanel;
+    }
 
     private void setupEventListeners() {
+        // Setting up event listeners for each player option button
         pOptionsPanel.getMoveButton().addActionListener(new MoveActionListener());
         pOptionsPanel.getSuggestButton().addActionListener(new SuggestActionListener());
         pOptionsPanel.getAccusationButton().addActionListener(new AccusationActionListener());
+        pOptionsPanel.getEndTurnButton().addActionListener(new EndTurnActionListener());
     }
-
+    
+    // Action Listener for the Move button
     private class MoveActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            // TO DO, add in player moves
             System.out.println("Move button clicked");
-            // Logic for player movement
+            if (gameClient != null) {
+                gameClient.sendMessage("REQUEST_MOVES|END|");
+            }
         }
     }
+    
+    /**
+     * Justin's Code for Suggestions and Accusations
+     * 
+     * need to me implemented with server/client messaging.
+     */
 
+    // Action Listener for the Suggest button
     private class SuggestActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            // Dropdowns for suggestion selections
             JComboBox<String> suspectList = new JComboBox<>();
             for (CharacterType character : CharacterType.values()) {
                 suspectList.addItem(character.getName());
@@ -237,6 +346,7 @@ public class Main extends JFrame {
                 roomList.addItem(room.getName());
             }
 
+            // Panel layout for suggestion inputs
             JPanel panel = new JPanel(new GridLayout(0, 1));
             panel.add(new JLabel("Select suspect:"));
             panel.add(suspectList);
@@ -245,27 +355,28 @@ public class Main extends JFrame {
             panel.add(new JLabel("Select room:"));
             panel.add(roomList);
 
-            int result = JOptionPane.showConfirmDialog(null, panel, "Make a Suggestion", JOptionPane.OK_CANCEL_OPTION);
+            int result = JOptionPane.showConfirmDialog(null, panel, "Make a Suggestion", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (result == JOptionPane.OK_OPTION) {
-                // No need to convert the selected item to String, as it's already a String
-                String suspectName = (String) suspectList.getSelectedItem();
-                String weaponName = (String) weaponList.getSelectedItem();
-                String roomName = (String) roomList.getSelectedItem();
+                
+                StringBuilder suggestion = new StringBuilder("SUGGESTION: ");
+                
+                // Get selected values
+                suggestion.append((String) suspectList.getSelectedItem()).append("|");
+                suggestion.append((String) weaponList.getSelectedItem()).append("|");
+                suggestion.append((String) roomList.getSelectedItem()).append("|");
 
-                // Create Card objects directly from selected values
-                Card suspect = new Card(suspectName);
-                Card weapon = new Card(weaponName);
-                Card room = new Card(roomName);
-
-                // Perform suggestion logic
-                gameBoard.performSuggestion(player, suspect, weapon, room); // GameBoard handles suggestion
+                suggestion.append("|END|");
+                
+                gameClient.sendMessage(suggestion.toString());
             }
         }
     }
 
+    // Action Listener for the Accusation button
     private class AccusationActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            // Dropdowns for accusation selections
             JComboBox<String> suspectList = new JComboBox<>();
             for (CharacterType character : CharacterType.values()) {
                 suspectList.addItem(character.getName());
@@ -281,6 +392,7 @@ public class Main extends JFrame {
                 roomList.addItem(room.getName());
             }
 
+            // Panel layout for accusation inputs
             JPanel panel = new JPanel(new GridLayout(0, 1));
             panel.add(new JLabel("Select suspect:"));
             panel.add(suspectList);
@@ -289,31 +401,35 @@ public class Main extends JFrame {
             panel.add(new JLabel("Select room:"));
             panel.add(roomList);
 
-            int result = JOptionPane.showConfirmDialog(null, panel, "Make an Accusation", JOptionPane.OK_CANCEL_OPTION);
+            int result = JOptionPane.showConfirmDialog(null, panel, "Make an Accusation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (result == JOptionPane.OK_OPTION) {
-                // No need to convert the selected item to String, as it's already a String
-                String suspectName = (String) suspectList.getSelectedItem();
-                String weaponName = (String) weaponList.getSelectedItem();
-                String roomName = (String) roomList.getSelectedItem();
+                // Build the accusation message
+                StringBuilder accusation = new StringBuilder("ACCUSATION: ");
 
-                // Create Card objects directly from selected values
-                Deck deck = new Deck(playersList);  // Pass players to Deck constructor
+                // Get selected values
+                accusation.append((String) suspectList.getSelectedItem()).append("|");
+                accusation.append((String) weaponList.getSelectedItem()).append("|");
+                accusation.append((String) roomList.getSelectedItem()).append("|");
+                accusation.append("END|");
 
-                // Get the suspect, weapon, and room from user input
-                Card suspect = new Card(suspectName);
-                Card weapon = new Card(weaponName);
-                Card room = new Card(roomName);
-
-                // Perform accusation logic by checking against the Deck
-                gameBoard.performAccusation(player, suspect, weapon, room, deck); // GameBoard handles accusation
+                // Send the accusation message to the server
+                gameClient.sendMessage(accusation.toString());
             }
         }
     }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Main frame = new Main();
-            frame.setVisible(true);
-        });
+    
+    // Action Listener for the End Turn button
+    private class EndTurnActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pOptionsPanel.enableSwitch(false);
+            gameClient.sendMessage("END_TURN|END|");
+        }
+    }
+    
+    // Starts up the Clue-Less Application
+    public static void main( String[] args )
+    {
+        SwingUtilities.invokeLater(() -> new Main().setVisible(true));
     }
 }

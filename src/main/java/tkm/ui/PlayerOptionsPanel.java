@@ -21,8 +21,8 @@ public class PlayerOptionsPanel extends JPanel {
     private JButton move;
     private JButton suggest;
     private JButton accuse;
-    private JButton reveal;
-
+    private JButton endTurn;
+    
     public PlayerOptionsPanel() {
         this.initComponents();
         
@@ -31,14 +31,15 @@ public class PlayerOptionsPanel extends JPanel {
         this.add(move);
         this.add(suggest);
         this.add(accuse);
-        this.add(reveal);
+        this.add(endTurn);
     }
     
     private void initComponents() {
         move = new JButton("Move Character");
         suggest = new JButton("Make a Suggestion");
         accuse = new JButton("Make Accusation");
-        reveal = new JButton("Disprove Suggestion");
+        endTurn = new JButton("End Turn");
+        this.enableSwitch(false);
     }
     
     public JButton getMoveButton() {
@@ -52,8 +53,18 @@ public class PlayerOptionsPanel extends JPanel {
     public JButton getAccusationButton() {
         return accuse;
     }
-
-    public JButton getReveal() {
-        return reveal;
+    
+    public JButton getEndTurnButton() {
+        return endTurn;
+    }
+    
+    // This method is used to enable or disable the components. Used with player
+    // turns to enable or disable the components. Should only enable when its 
+    // the players turn.
+    public void enableSwitch(boolean activate) {
+            move.setEnabled(activate);
+            suggest.setEnabled(activate);
+            accuse.setEnabled(activate);
+            endTurn.setEnabled(activate);
     }
 }

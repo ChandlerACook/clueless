@@ -1,31 +1,38 @@
+
 package tkm.ui;
 
-import tkm.Card;
+import java.util.ArrayList;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
-import javax.swing.*;
-import java.awt.*;
-import java.util.List;
-
+/**
+ *
+ * @author Mike
+ */
 public class CardPanel extends JPanel {
-
-    private JComboBox<String> playerHandDropdown;
-
-    // Constructor that accepts List<Card> as parameter
-    public CardPanel(List<Card> playerHand) {
-        this.initComponents(playerHand); // Initialize components using the player's hand
-        this.setLayout(new GridLayout(0, 1, 5, 5));
-        this.add(new JLabel("Player Hand", SwingConstants.CENTER));
-        this.add(playerHandDropdown);
-    }
-
-    // Initializes the components (Dropdown list for player hand cards)
-    private void initComponents(List<Card> playerHand) {
-        String[] cardNames = new String[playerHand.size()];
-        for (int i = 0; i < playerHand.size(); i++) {
-            cardNames[i] = playerHand.get(i).getName(); // Get the card name from each Card object
+    
+    private final String[] hand;
+    private final ArrayList<JButton> cardButtons;
+    
+    public CardPanel(String[] playerHand) {
+        for(String string : playerHand) {
+            System.out.println(string);
         }
-
-        playerHandDropdown = new JComboBox<>(cardNames); // Populate the dropdown with card names
-        playerHandDropdown.setAlignmentX(CENTER_ALIGNMENT);
+        this.hand = playerHand;
+        cardButtons = new ArrayList();
+        this.initComponents();
+    }
+    
+    private void initComponents() {
+        this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        this.setBorder(BorderFactory.createTitledBorder("Your Cards"));
+        
+        for(String card : hand) {
+            JButton button = new JButton(card);
+            cardButtons.add(button);
+            this.add(button);
+        }
     }
 }
