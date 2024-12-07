@@ -308,7 +308,10 @@ public class Main extends JFrame {
             gamePanel.revalidate();
             gamePanel.repaint();
         });
-        
+    }
+    
+    public PlayerOptionsPanel getOptionsPanel() {
+        return this.pOptionsPanel;
     }
 
     private void setupEventListeners() {
@@ -316,6 +319,7 @@ public class Main extends JFrame {
         pOptionsPanel.getMoveButton().addActionListener(new MoveActionListener());
         pOptionsPanel.getSuggestButton().addActionListener(new SuggestActionListener());
         pOptionsPanel.getAccusationButton().addActionListener(new AccusationActionListener());
+        pOptionsPanel.getEndTurnButton().addActionListener(new EndTurnActionListener());
     }
     
     // Action Listener for the Move button
@@ -367,19 +371,17 @@ public class Main extends JFrame {
 
             int result = JOptionPane.showConfirmDialog(null, panel, "Make a Suggestion", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (result == JOptionPane.OK_OPTION) {
+                
+                StringBuilder suggestion = new StringBuilder("SUGGESTION: ");
+                
                 // Get selected values
-                String suspectName = (String) suspectList.getSelectedItem();
-                String weaponName = (String) weaponList.getSelectedItem();
-                String roomName = (String) roomList.getSelectedItem();
+                suggestion.append((String) suspectList.getSelectedItem()).append("|");
+                suggestion.append((String) weaponList.getSelectedItem()).append("|");
+                suggestion.append((String) roomList.getSelectedItem()).append("|");
 
-                // Create suggestion cards
-                Card suspect = new Card(suspectName, 1);
-                Card weapon = new Card(weaponName, 2);
-                Card room = new Card(roomName, 3);
-
-                // Make the suggestion and display the result
-                MakeSuggestion suggestion = new MakeSuggestion(currentPlayer, suspect, weapon, room);
-                suggestion.performSuggestion();
+                suggestion.append("|END|");
+                
+                gameClient.sendMessage(suggestion.toString());
             }
         }
     }
@@ -429,6 +431,15 @@ public class Main extends JFrame {
                 MakeAccusation accusation = new MakeAccusation(currentPlayer, suspect, weapon, room);
                 accusation.performAccusation(murderDeck);
             }
+        }
+    }
+    
+    // Action Listener for the End Turn button
+    private class EndTurnActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            pOptionsPanel.enableSwitch(false);
+            gameClient.sendMessage("END_TURN|END|");
         }
     }
     
