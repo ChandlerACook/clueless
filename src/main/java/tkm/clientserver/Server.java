@@ -43,6 +43,7 @@ public class Server implements Runnable{
     public Server(Main main) {
         this.main = main;
         this.gameBoard = new GameBoard();
+        this.gameBoard.setServer(this);
         try {
             socket = new ServerSocket(PORT);
             clientPool = Executors.newCachedThreadPool();
@@ -147,5 +148,5 @@ public class Server implements Runnable{
     public int getClientListSize() {
         return clientList.size();
     }
-    
+
 } // end of class Server

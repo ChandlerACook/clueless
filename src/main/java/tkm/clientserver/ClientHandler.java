@@ -162,13 +162,12 @@ public class ClientHandler implements Runnable{
             server.broadcast("REDRAW|END|");
         }
 
-        else if(fullMessage.contains("ACCUSATION:")) {
+        else if (fullMessage.contains("ACCUSATION:")) {
             String message = fullMessage.replace("ACCUSATION:", "").replace("|END|", "").trim();
 
-            String[] suggestion = message.split("\\|");
+            String[] accusation = message.split("\\|");
 
-          //  server.getGameBoard().handleAccusation(accusation, player);
-            server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
+            server.getGameBoard().handleAccusation(accusation, player);
             server.broadcast("REDRAW|END|");
         }
         

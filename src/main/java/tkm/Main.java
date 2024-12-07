@@ -1,6 +1,6 @@
 package tkm;
 
-import tkm.gamelogic.Player;
+import tkm.gamelogic.*;
 import tkm.ui.*;
 import tkm.clientserver.*;
 import tkm.enums.*;
@@ -218,6 +218,7 @@ public class Main extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 chatPanel.setVisible(true);
                 this.switchToPOPanel();
+
                 // Set up event listeners for player options
                 setupEventListeners();
                 this.switchToGamePanel();
@@ -226,6 +227,7 @@ public class Main extends JFrame {
             });
         }
     }
+
 
     // Adds the players message to the chat area. SwingUtilities was used to ensure
     // Thread safety, and is required when using swing and multiple threads

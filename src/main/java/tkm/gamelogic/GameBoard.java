@@ -11,9 +11,12 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import tkm.clientserver.ClientHandler;
+import tkm.clientserver.Server;
 import tkm.enums.CharacterType;
 import tkm.enums.RoomType;
 import tkm.enums.WeaponType;
+
+import javax.swing.*;
 
 /**
  * @file GameBoard.
@@ -35,6 +38,7 @@ public class GameBoard {
     private Map<Player, ClientHandler> playerClients;
     //private ArrayList<BufferedImage> images;
     private int currentTurn = 0;
+    private Server server;
     
     private static final int TILEMAP[][] = {
             {0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0,  0,  0,  0,  0, 0},
@@ -70,7 +74,7 @@ public class GameBoard {
        playerPieces = new HashMap<>();
        playerClients = new HashMap<>();
        
-       
+
        this.createGamePieces();
        this.createDeck();
     }
@@ -90,7 +94,11 @@ public class GameBoard {
         Collections.shuffle(players);
         this.assignPlayerToGamePiece();
         this.dealCards();
-        
+
+        String solutionMessage = "CHAT: Case file: " +
+                this.caseFileToString() + "|END|";
+        server.broadcast(solutionMessage);
+
         // Tell the first player it is their turn
         playerClients.get(players.get(0)).sendMessage("YOUR_TURN|END|");
         
@@ -138,8 +146,7 @@ public class GameBoard {
                 }
             }
         }
-        
-        
+
         StringBuilder disprove = new StringBuilder("DISPROVE: ");
         
         while(nextPlayer % players.size() != currentTurn) {
@@ -161,7 +168,117 @@ public class GameBoard {
         // know.
         playerClients.get(players.get(currentTurn)).sendMessage("NONE|END|");
     }
-  // public void handleAccusation(String[] accusation, Player player)
+
+    public void handleAccusation(String[] accusation, Player player) {
+        // Extract accusation details
+        String suspect = accusation[0];
+        String weapon = accusation[1];
+        String room = accusation[2];
+
+        // Check if the accusation matches the case file
+        boolean isCorrect = caseFile.get(0).getName().equals(suspect) &&
+                caseFile.get(1).getName().equals(weapon) &&
+                caseFile.get(2).getName().equals(room);
+
+        if (isCorrect) {
+            // Notify all players of the correct accusation
+            String victoryMessage = "CHAT: " + player.getName() + " has solved the mystery! The case file reveals:\n" +
+                    caseFileToString() + " Congratulations!|END|";
+            String winMessage = "GAME_OVER|WINNER|" + player.getName() + "|END|";
+            server.broadcast(winMessage);
+            server.broadcast(victoryMessage);
+
+            // End the game
+            endGame();
+        } else {
+            // Eliminate the player and notify everyone
+            eliminatePlayer(player);
+            String failMessage = "ACCUSATION_FAILED|" + player.getName() + "|END|";
+            server.broadcast(failMessage);
+
+            // Check if all players are eliminated
+            if (players.isEmpty()) {
+                handleAllPlayersEliminated();
+            } else {
+                // Update game visuals if needed
+                server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
+                server.broadcast("REDRAW|END|");
+            }
+        }
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
+    }
+
+    private void eliminatePlayer(Player player) {
+        players.remove(player);
+
+        String eliminationMessage = "CHAT: " + player.getName() + " has been eliminated from the game!|END|";
+        server.broadcast(eliminationMessage);
+
+        JOptionPane.showMessageDialog(null,
+                player.getName() + " has made an incorrect accusation! They are now eliminated from the game!",
+                "Player Eliminated!",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void handleAllPlayersEliminated() {
+        // Prepare the case file reveal message
+        String caseFileReveal = "CHAT: All players have been eliminated! The murder mystery remains unsolved! The case file reveals:\n" +
+                caseFileToString() + "|END|";
+
+        // Broadcast the reveal to the chat panel
+        server.broadcast(caseFileReveal);
+
+        // Show the case file in a pop-up message to the host or all players
+        JOptionPane.showMessageDialog(null,
+                "The mystery remains unsolved! The case file reveals:\n\n" +
+                        caseFileToString(),
+                "Mystery Unsolved!",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        // End the game
+        server.getGameBoard().endGame();
+    }
+
+    public void endGame() {
+        System.out.println("The game is now over!");
+
+        // Create options for the user
+        String[] options = {"New Game", "Exit"};
+
+        // Show a dialog with Restart and Exit options
+        int choice = JOptionPane.showOptionDialog(
+                null,
+                "The game has ended. Would you like the start a new game?",
+                "Game Over",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                options[1]  // Default selection is Exit
+        );
+
+        // Handle user choice
+        if (choice == 0) {  // Restart Game
+            newGame();
+        } else {  // Exit or closed dialog
+            System.exit(0);
+        }
+    }
+
+    private void newGame() {
+        // Reset game state
+        players.clear();
+        deck.clear();
+        caseFile.clear();
+        pieces.clear();
+        playerHands.clear();
+        playerPieces.clear();
+        playerClients.clear();
+        currentTurn = 0;
+        }
 
     private int getRoomNumber(String roomName) {
         switch(roomName) {
