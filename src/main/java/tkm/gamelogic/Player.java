@@ -14,8 +14,22 @@ public class Player {
         this.name = name;
         this.hand = new ArrayList<>(); 
     }
+    private boolean isEliminated;
 
-    
+    public boolean isEliminated() {
+        return isEliminated;
+    }
+
+    public void resetStatus() {
+        this.isEliminated = false; // Mark the player as active again
+        this.clearHand();         // Remove all cards from the player's hand
+
+    }
+
+    public void setEliminated(boolean eliminated) {
+        isEliminated = eliminated;
+    }
+
     public void move(int x, int y) {
         this.gamePiece.setPosition(x, y);
     }
@@ -48,7 +62,11 @@ public class Player {
     public void addCard(Card card) {
         this.hand.add(card);
     }
-    
+
+    public void clearHand() {
+        hand.clear();
+    }
+
     public ArrayList<Card> getHand() {
         return hand;
     }

@@ -39,7 +39,8 @@ public class GameBoard {
     //private ArrayList<BufferedImage> images;
     private int currentTurn = 0;
     private Server server;
-    
+    private ArrayList<ClientHandler> clientList;
+
     private static final int TILEMAP[][] = {
             {0, 0, 0, 0, 0, 0, 0, 0,  0,  0,  0,  0, 0, 0, 0,  0,  0,  0,  0, 0},
             {0, 3, 3, 3, 3, 0, 0, 0,  4,  4,  4,  4, 0, 0, 0,  5,  5,  5,  5, 0},
@@ -73,7 +74,6 @@ public class GameBoard {
        playerHands = new HashMap<>();
        playerPieces = new HashMap<>();
        playerClients = new HashMap<>();
-       
 
        this.createGamePieces();
        this.createDeck();
@@ -188,8 +188,14 @@ public class GameBoard {
             server.broadcast(winMessage);
             server.broadcast(victoryMessage);
 
+            JOptionPane.showMessageDialog(null,
+                    player.getName() + " has solved the murder mystery! They found out it was " +
+                caseFileToString() + " Congratulations!",
+                    "Mystery Solved!",
+                    JOptionPane.INFORMATION_MESSAGE);
             // End the game
             endGame();
+
         } else {
             // Eliminate the player and notify everyone
             eliminatePlayer(player);
@@ -212,11 +218,14 @@ public class GameBoard {
     }
 
     private void eliminatePlayer(Player player) {
-        players.remove(player);
+        // Mark the player as eliminated instead of removing them
+        player.setEliminated(true);
 
+        // Notify other players about the elimination
         String eliminationMessage = "CHAT: " + player.getName() + " has been eliminated from the game!|END|";
         server.broadcast(eliminationMessage);
 
+        // Show a popup notification
         JOptionPane.showMessageDialog(null,
                 player.getName() + " has made an incorrect accusation! They are now eliminated from the game!",
                 "Player Eliminated!",
@@ -243,7 +252,7 @@ public class GameBoard {
     }
 
     public void endGame() {
-        System.out.println("The game is now over!");
+        System.out.println("The game is over!");
 
         // Create options for the user
         String[] options = {"New Game", "Exit"};
@@ -262,23 +271,69 @@ public class GameBoard {
 
         // Handle user choice
         if (choice == 0) {  // Restart Game
-            newGame();
+            restartGame();
         } else {  // Exit or closed dialog
             System.exit(0);
         }
     }
+    public void restartGame() {
+        if (players.isEmpty() && clientList != null) {
+            System.out.println("Repopulating players from clientList...");
+            for (ClientHandler client : clientList) {
+                Player player = client.getPlayer();
+                System.out.println("ClientHandler: " + client + ", Player: " + (player == null ? "null" : player.getName()));
+                if (player != null) {
+                    players.add(player);
+                }
+            }
+        }
 
-    private void newGame() {
-        // Reset game state
-        players.clear();
+        if (players.isEmpty()) {
+            System.out.println("No players available to restart the game.");
+            JOptionPane.showMessageDialog(null,
+                    "Cannot start a new game. No players available.",
+                    "Game Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Reset game state while keeping players intact
         deck.clear();
         caseFile.clear();
         pieces.clear();
         playerHands.clear();
         playerPieces.clear();
-        playerClients.clear();
         currentTurn = 0;
+
+        // Recreate game components
+        this.createGamePieces();
+        this.createDeck();
+
+        // Clear player hands but keep players
+        for (Player player : players) {
+            player.clearHand(); // Reset cards for each player
         }
+
+        // Shuffle the deck and set up the new game state
+        Collections.shuffle(deck);
+        this.createCaseFile();
+        this.assignPlayerToGamePiece();
+        this.dealCards();
+
+        // Broadcast the new game state to all connected clients
+        if (server != null) {
+            String solutionMessage = "CHAT: New case file: " + this.caseFileToString() + "|END|";
+            server.broadcast(solutionMessage);
+
+            // Notify the first player it's their turn
+            Player firstPlayer = players.get(0);
+            server.broadcast("PLAYERS_TURN: " + firstPlayer.getName() + "|END|");
+        }
+
+        System.out.println("Game restarted successfully.");
+    }
+
+
 
     private int getRoomNumber(String roomName) {
         switch(roomName) {

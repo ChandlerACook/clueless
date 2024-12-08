@@ -23,7 +23,7 @@ import tkm.gamelogic.GameBoard;
 
 public class Server implements Runnable{
     
-    public static final int PORT = 5555;            //place holder
+    public static final int PORT = 25565;            //place holder
     private ServerSocket socket;
     private ExecutorService clientPool;             // Handles Client Threads concurrently
     private ArrayList<ClientHandler> clientList;    // List of all Clients on the server
