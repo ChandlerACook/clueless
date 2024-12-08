@@ -233,25 +233,34 @@ public class GameBoard {
                 player.getName() + " has made an incorrect accusation! They are now eliminated from the game!",
                 "Player Eliminated!",
                 JOptionPane.INFORMATION_MESSAGE);
+
+                handleAllPlayersEliminated();
     }
 
     private void handleAllPlayersEliminated() {
-        // Prepare the case file reveal message
-        String caseFileReveal = "CHAT: All players have been eliminated! The murder mystery remains unsolved! The case file reveals:\n" +
-                caseFileToString() + "|END|";
+        // Track eliminated players
+        boolean allPlayersEliminated = true;
+        for (Player player : players) {
+            if (!player.isEliminated()) {
+                allPlayersEliminated = false;
+                break;
+            }
+        }
 
-        // Broadcast the reveal to the chat panel
-        server.broadcast(caseFileReveal);
+        if (allPlayersEliminated) {
+            String caseFileReveal = "CHAT: All players have been eliminated! The murder mystery remains unsolved! The case file reveals:\n" +
+                    caseFileToString() + "|END|";
 
-        // Show the case file in a pop-up message to the host or all players
-        JOptionPane.showMessageDialog(null,
-                "The mystery remains unsolved! The case file reveals:\n\n" +
-                        caseFileToString(),
-                "Mystery Unsolved!",
-                JOptionPane.INFORMATION_MESSAGE);
+            // Broadcast the reveal to the chat panel
+            server.broadcast(caseFileReveal);
 
-        // End the game
-        server.getGameBoard().endGame();
+            JOptionPane.showMessageDialog(null,
+                    "The mystery remains unsolved! The case file reveals:\n\n" +
+                            caseFileToString(),
+                    "Mystery Unsolved!",
+                    JOptionPane.INFORMATION_MESSAGE);
+            server.getGameBoard().endGame();
+        }
     }
 
     public void endGame() {
@@ -279,6 +288,7 @@ public class GameBoard {
             System.exit(0);
         }
     }
+    // method to handle game restarts
     public void restartGame() {
         if (players.isEmpty() && clientList != null) {
             System.out.println("Repopulating players from clientList...");
