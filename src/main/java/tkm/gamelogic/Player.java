@@ -1,6 +1,7 @@
 package tkm.gamelogic;
 
 import java.util.ArrayList;
+
 import tkm.enums.CharacterType;
 
 public class Player {
@@ -8,6 +9,7 @@ public class Player {
     private CharacterType character;  // The character the player is playing as
     private GamePiece gamePiece;
     private final ArrayList<Card> hand;
+    private boolean isEliminated;
     
     // initialize a player with a name and character
     public Player(String name) {
@@ -15,6 +17,19 @@ public class Player {
         this.hand = new ArrayList<>(); 
     }
 
+    public boolean isEliminated() {
+        return isEliminated;
+    }
+
+    public void resetStatus() {
+        this.isEliminated = false; // Mark the player as active again
+        this.clearHand();         // Remove all cards from the player's hand
+
+    }
+
+    public void setEliminated(boolean eliminated) {
+        isEliminated = eliminated;
+    }
     
     public void move(int x, int y) {
         this.gamePiece.setPosition(x, y);
@@ -49,6 +64,10 @@ public class Player {
         this.hand.add(card);
     }
     
+    public void clearHand() {
+        hand.clear();
+    }
+
     public ArrayList<Card> getHand() {
         return hand;
     }

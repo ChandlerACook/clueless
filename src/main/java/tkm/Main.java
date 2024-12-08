@@ -337,11 +337,6 @@ public class Main extends JFrame {
         }
     }
     
-    /**
-     * Justin's Code for Suggestions and Accusations
-     * 
-     * need to me implemented with server/client messaging.
-     */
 
     // Action Listener for the Suggest button
     private class SuggestActionListener implements ActionListener {

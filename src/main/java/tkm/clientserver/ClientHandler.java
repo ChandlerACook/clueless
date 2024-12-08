@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Set;
-import javax.swing.JOptionPane;
+
 import tkm.gamelogic.Card;
 import tkm.gamelogic.GamePiece;
 import tkm.gamelogic.Player;
@@ -159,6 +159,15 @@ public class ClientHandler implements Runnable{
             
             server.getGameBoard().handleSuggestion(suggestion, player);
             server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
+            server.broadcast("REDRAW|END|");
+        }
+
+        else if(fullMessage.contains("ACCUSATION:")) {
+            String message = fullMessage.replace("Accusation:", "").replace("|END|", "").trim();
+
+            String[] accusation = message.split("\\|");
+
+            server.getGameBoard().handleAccusation(accusation, player);
             server.broadcast("REDRAW|END|");
         }
         
