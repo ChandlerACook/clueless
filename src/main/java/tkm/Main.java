@@ -123,13 +123,12 @@ public class Main extends JFrame {
         Way for user to back out of hostgame without making a server
         */
 
-        //if(username != null) {
             // Start the host's server on a new Thread
             gameServer = new Server(this);
             new Thread(gameServer).start();
 
             // Start the host's client
-            gameClient = new Client("localhost", Server.PORT, this, true);
+            gameClient = new Client("0.0.0.0", Server.PORT, this, true);
             new Thread(gameClient).start();
 
             gamePanel = new GamePanel(gameServer.getGameBoard().getTileMap(), 
@@ -164,7 +163,7 @@ public class Main extends JFrame {
              */
 
             // Start player's client
-            gameClient = new Client("localhost", Server.PORT, this, false);
+            gameClient = new Client(serverAddressField.getText(), 25565, this, false);
             new Thread(gameClient).start();
             
             this.createStartPanel(false);

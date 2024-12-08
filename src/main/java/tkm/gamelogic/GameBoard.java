@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import tkm.clientserver.ClientHandler;
 import tkm.clientserver.Server;
 import tkm.enums.CharacterType;
@@ -197,6 +199,7 @@ public class GameBoard {
             endGame();
 
         } else {
+
             // Eliminate the player and notify everyone
             eliminatePlayer(player);
             String failMessage = "ACCUSATION_FAILED|" + player.getName() + "|END|";
@@ -297,6 +300,19 @@ public class GameBoard {
             return;
         }
 
+        // Comprehensive reset broadcast
+        server.broadcast("GAME_RESET_FULL|" +
+                "Players=" + players.stream().map(Player::getName).collect(Collectors.joining(",")) + "|" +
+                "TileMap=" + stringTileMap() + "|" +
+                "END|");
+
+        // Detailed reset information
+        String resetMessage = "GAME_RESET_DETAILS: " +
+                "New Case File=" + this.caseFileToString() +
+                "|First Player=" + players.get(0).getName() +
+                "|END|";
+        server.broadcast(resetMessage);
+
         // Reset game state while keeping players intact
         deck.clear();
         caseFile.clear();
@@ -312,6 +328,7 @@ public class GameBoard {
         // Clear player hands but keep players
         for (Player player : players) {
             player.clearHand(); // Reset cards for each player
+            player.setEliminated(false); // Reset elimination status
         }
 
         // Shuffle the deck and set up the new game state
@@ -320,14 +337,32 @@ public class GameBoard {
         this.assignPlayerToGamePiece();
         this.dealCards();
 
+        // Broadcast piece and player information
+        server.broadcast("PIECES: " + stringPieces() + "|END|");
+        server.broadcast("GAMEBOARD: " + stringTileMap() + "|END|");
+
         // Broadcast the new game state to all connected clients
         if (server != null) {
             String solutionMessage = "CHAT: New case file: " + this.caseFileToString() + "|END|";
             server.broadcast(solutionMessage);
 
+            // Notify each player of their hand
+            for (Player player : players) {
+                ClientHandler clientHandler = playerClients.get(player);
+                if (clientHandler != null) {
+                    StringBuilder cardsMessage = new StringBuilder("PLAYER_CARDS:");
+                    for (Card card : player.getHand()) {
+                        cardsMessage.append(card.getName()).append("|");
+                    }
+                    cardsMessage.append("|END|");
+                    clientHandler.sendMessage(cardsMessage.toString());
+                }
+            }
+
             // Notify the first player it's their turn
             Player firstPlayer = players.get(0);
             server.broadcast("PLAYERS_TURN: " + firstPlayer.getName() + "|END|");
+            playerClients.get(firstPlayer).sendMessage("YOUR_TURN|END|");
         }
 
         System.out.println("Game restarted successfully.");
