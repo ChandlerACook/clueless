@@ -1,71 +1,93 @@
-package tkm;
+package tkm.gamelogic;
 
 import java.util.ArrayList;
-import java.util.List;
-import tkm.gamelogic.Room;
+import tkm.enums.CharacterType;
 
 public class Player {
-    private String name;
-    private String character;  // The character the player is playing as
-    private List<Card> cards;
-    private Room currentRoom;  // The room the player is currently in
-
-    // Initialize a player with a name and character
-    public Player(String name, String character) {
+    private final String name;
+    private CharacterType character;  // The character the player is playing as
+    private GamePiece gamePiece;
+    private final ArrayList<Card> hand;
+    
+    // initialize a player with a name and character
+    public Player(String name) {
         this.name = name;
-        this.character = character;
-        this.cards = new ArrayList<>();
-        this.currentRoom = null; // Player starts outside any room
+        this.hand = new ArrayList<>(); 
+    }
+    private boolean isEliminated;
+
+    public boolean isEliminated() {
+        return isEliminated;
     }
 
-    // Getter for the player's name
+    public void resetStatus() {
+        this.isEliminated = false; // Mark the player as active again
+        this.clearHand();         // Remove all cards from the player's hand
+
+    }
+
+    public void setEliminated(boolean eliminated) {
+        isEliminated = eliminated;
+    }
+
+    public void move(int x, int y) {
+        this.gamePiece.setPosition(x, y);
+    }
+    
+    public boolean hasCard(String cardName) {
+        for(Card card : hand) {
+            if(card.getName().equals(cardName))
+                return true;
+        }
+        return false;
+    }
+    
     public String getName() {
         return name;
     }
 
-    // Getter for the player's character
-    public String getCharacter() {
+    public CharacterType getCharacter() {
         return character;
     }
-
-    // Add a card to the player's hand
+    
+    public void setGamePiece(GamePiece gamePiece) {
+        this.gamePiece = gamePiece;
+        this.setCharacter();
+    }
+    
+    private void setCharacter() {
+        this.character = gamePiece.getCharacter();
+    }
+    
     public void addCard(Card card) {
-        cards.add(card);
+        this.hand.add(card);
     }
 
-    // Get all cards in the player's hand
-    public List<Card> getCards() {
-        return cards;
+    public void clearHand() {
+        hand.clear();
     }
 
-    // Get a list of cards that match the given suspect, weapon, or room
-    public List<Card> getMatchingCards(Card suspect, Card weapon, Card room) {
-        List<Card> matchingCards = new ArrayList<>();
-        for (Card card : cards) {
-            if (card.equals(suspect) || card.equals(weapon) || card.equals(room)) {
-                matchingCards.add(card);
-            }
+    public ArrayList<Card> getHand() {
+        return hand;
+    }
+    
+    public GamePiece getGamePiece() {
+        return gamePiece;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        
+        b.append(name);
+        b.append(" ");
+        b.append(gamePiece.toString());
+        b.append(" ");
+        
+        for(Card card: hand) {
+            b.append(card.toString());
         }
-        return matchingCards;
-    }
-
-    // Get the player's hand of cards
-    public List<Card> getPlayerHand() {
-        return cards;
-    }
-
-    // Set the player's hand of cards
-    public void setPlayerHand(List<Card> hand) {
-        this.cards = hand;
-    }
-
-    // Get the current room of the player
-    public Room getCurrentRoom() {
-        return currentRoom;
-    }
-
-    // Set the current room of the player (e.g., when they enter a new room)
-    public void setCurrentRoom(Room room) {
-        this.currentRoom = room;
+        
+        return b.toString();
     }
 }
