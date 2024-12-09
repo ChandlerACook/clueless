@@ -20,7 +20,6 @@ import tkm.clientserver.Server;
 import tkm.enums.CharacterType;
 import tkm.enums.RoomType;
 import tkm.enums.WeaponType;
-import tkm.gamelogic.Deck;
 import tkm.gamelogic.GamePiece;
 import tkm.gamelogic.Player;
 import tkm.ui.CardPanel;
@@ -57,7 +56,7 @@ public class Main extends JFrame {
     private Server gameServer;
     private Client gameClient;
     
-    private Deck murderDeck;
+    //private Deck murderDeck;
     private Player currentPlayer;
 
     public Main() {
@@ -70,7 +69,7 @@ public class Main extends JFrame {
         this.initializeComponents();
 
         // Initialize game components
-        murderDeck = new Deck(); // The solution deck for the game
+        //murderDeck = new Deck(); // The solution deck for the game
         //currentPlayer = new Player("Player 1"); // Example current player
 
         /*
