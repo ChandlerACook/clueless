@@ -370,6 +370,12 @@ public class Main extends JFrame {
         this.remove(characterPanel);
         gameClient.sendMessage("REQUEST_CHARACTER|END|");
     }
+
+    public void elimPlayer() {
+        pOptionsPanel.setMove(false);
+        pOptionsPanel.setSuggest(false);
+        pOptionsPanel.setAccuse(false);
+    }
     
 
     // Action Listener for the Suggest button
@@ -462,6 +468,9 @@ public class Main extends JFrame {
     
                     // Send the accusation message to the server
                     gameClient.sendMessage(accusation.toString());
+                    pOptionsPanel.setMove(false);
+                    pOptionsPanel.setSuggest(false);
+                    pOptionsPanel.setAccuse(false);
                 }
             }
         }

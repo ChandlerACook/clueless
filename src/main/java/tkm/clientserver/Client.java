@@ -131,10 +131,18 @@ public class Client implements Runnable{
         else if(fullMessage.contains("YOUR_TURN")) {
             JOptionPane.showMessageDialog(main, "It is your turn!");
             main.getOptionsPanel().enableSwitch(true);
+            sendMessage("CHECK_ELIMINATED|END|");
             sendMessage("REQUEST_LOCATION: " + "|END|");
             sendMessage("REQUEST_ROOM: " + "|END|");
         }
         
+        else if(fullMessage.contains("CHECK_ELIMINATED")) {
+            //String message = fullMessage.replace("CHECK_ELIMINATED", "").trim();
+            if (fullMessage.contains("TRUE")) {
+                main.elimPlayer();
+            }
+            
+        }
         else if(fullMessage.contains("REQUEST_LOCATION")) {
             String message = fullMessage.replace("REQUEST_LOCATION: ", "").trim();
             if (fullMessage.contains("FALSE")) {

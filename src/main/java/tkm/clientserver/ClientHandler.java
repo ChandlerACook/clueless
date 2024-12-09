@@ -247,6 +247,15 @@ public class ClientHandler implements Runnable{
         }
     }
 
+    else if (fullMessage.contains("CHECK_ELIMINATED")) {
+        boolean isElim = player.isEliminated();
+
+        if (isElim == true) {
+            server.getGameBoard().getCurrentClient().sendMessage("CHECK_ELIMINATED|TRUE|END|");
+        } else {
+            server.getGameBoard().getCurrentClient().sendMessage("CHECK_ELIMINATED|FALSE|END|");
+        }
+    }
     else if (fullMessage.contains("REQUEST_ROOM")) {
         GamePiece piece = server.getGameBoard().getPlayerGamePiece(player);
         int x = piece.getX();

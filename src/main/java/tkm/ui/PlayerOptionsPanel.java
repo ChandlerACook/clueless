@@ -83,4 +83,8 @@ public class PlayerOptionsPanel extends JPanel {
     public void setSuggest(boolean activate) {
         suggest.setEnabled(activate);
     }
+
+    public void setAccuse(boolean activate) {
+        accuse.setEnabled(activate);
+    }
 }

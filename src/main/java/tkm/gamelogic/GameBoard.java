@@ -173,6 +173,7 @@ public class GameBoard {
 
     public void handleAccusation(String[] accusation, Player player) {
         // Extract accusation details
+        eliminatePlayer(player);
         String suspect = accusation[0];
         String weapon = accusation[1];
         String room = accusation[2];
@@ -287,7 +288,6 @@ public class GameBoard {
 
 
 
-
             restartGame();
         } else {  // Exit or closed dialog
             System.exit(0);
@@ -295,6 +295,7 @@ public class GameBoard {
     }
     // method to handle game restarts
     public void restartGame() {
+        
         if (players.isEmpty() && clientList != null) {
             System.out.println("Repopulating players from clientList...");
             for (ClientHandler client : clientList) {
