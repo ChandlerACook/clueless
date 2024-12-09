@@ -242,6 +242,14 @@ public class ClientHandler implements Runnable{
             server.getGameBoard().getCurrentClient().sendMessage(message);
         }
     }
+
+    else if (fullMessage.contains("REQUEST_ROOM")) {
+        GamePiece piece = server.getGameBoard().getPlayerGamePiece(player);
+        int x = piece.getX();
+        int y = piece.getY();
+        String message = "CURRENT_ROOM" + "|" + Integer.toString(x) + "|" + Integer.toString(y) + "|" + "|END|";
+        server.getGameBoard().getCurrentClient().sendMessage(message);
+    }
     // An unknown client message was received
     else {
         outgoing.println("Unknown command: " + fullMessage);

@@ -21,6 +21,7 @@ public class GamePiece {
     private int x;
     private int y;
     private boolean inRoom;
+    private String currentRoom;
     //private final ImageIcon icon;
     private final CharacterType character;
     
@@ -29,6 +30,7 @@ public class GamePiece {
         this.y = y;
         //this.icon = icon;
         this.character = character;
+        currentRoom = new String();
     }
     
     public int getX() {
@@ -66,6 +68,12 @@ public class GamePiece {
     
     public String toString() {
         return character.getName() + "," + x + "," + y;
+    }
+
+    public String getCurrentRoom() {
+
+        
+        return currentRoom;
     }
     
 }

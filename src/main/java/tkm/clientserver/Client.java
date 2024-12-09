@@ -132,6 +132,7 @@ public class Client implements Runnable{
             JOptionPane.showMessageDialog(main, "It is your turn!");
             main.getOptionsPanel().enableSwitch(true);
             sendMessage("REQUEST_LOCATION: " + "|END|");
+            sendMessage("REQUEST_ROOM: " + "|END|");
         }
         
         else if(fullMessage.contains("REQUEST_LOCATION")) {
@@ -274,16 +275,27 @@ public class Client implements Runnable{
                         sendMessage("MOVE: " + originalCoordinate + "|END|");
                         main.getOptionsPanel().setMove(false);
                         sendMessage("REQUEST_LOCATION: " + "|END|");
+                        sendMessage("REQUEST_ROOM: " + "|END|");
                         break;
                     }
                 }
             }
         } 
+
+        else if(fullMessage.contains("CURRENT_ROOM")) {
+            String[] coordinates = fullMessage.split("\\|");
+            int x = Integer.parseInt(coordinates[1]);
+            int y = Integer.parseInt(coordinates[2]);
+            int[] intArray = {x,y};
+            String currentRoom = locationName(intArray);
+            main.setCurrentRoom(currentRoom);
+        }
         // This server message tells the client to redraw their gamepanel to
         // represent any changes.
         else if(fullMessage.equals("REDRAW")) {
             main.redrawGamePanel(pieces);
         }
+
     }
 
     

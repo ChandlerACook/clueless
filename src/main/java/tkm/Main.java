@@ -55,7 +55,7 @@ public class Main extends JFrame {
     private String username;
     private Server gameServer;
     private Client gameClient;
-    
+    private String currentRoom;
     //private Deck murderDeck;
     private Player currentPlayer;
 
@@ -67,7 +67,7 @@ public class Main extends JFrame {
         optionsPanel = new JPanel();
         contentPanel = new JPanel();
         this.initializeComponents();
-
+        currentRoom = new String();
         // Initialize game components
         //murderDeck = new Deck(); // The solution deck for the game
         //currentPlayer = new Player("Player 1"); // Example current player
@@ -126,6 +126,9 @@ public class Main extends JFrame {
         System.exit(0);
     }
 
+    public void setCurrentRoom(String room) {
+        this.currentRoom = room;
+    }
     // Host Game Button Action, sets up a server and a client for the host, and
     // should proceed to the game lobby or panel.
     private void hostGame(ActionEvent e) {
@@ -332,6 +335,7 @@ public class Main extends JFrame {
             System.out.println("Move button clicked");
             if (gameClient != null) {
                 gameClient.sendMessage("REQUEST_MOVES|END|");
+                
             }
         }
     }
@@ -353,9 +357,11 @@ public class Main extends JFrame {
             }
 
             JComboBox<String> roomList = new JComboBox<>();
-            for (RoomType room : RoomType.values()) {
-                roomList.addItem(room.getName());
-            }
+            
+            roomList.addItem(currentRoom);
+            //for (RoomType room : RoomType.values()) {
+            //    roomList.addItem(room.getName());
+            //}
 
             // Panel layout for suggestion inputs
             JPanel panel = new JPanel(new GridLayout(0, 1));
