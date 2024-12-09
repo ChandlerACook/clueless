@@ -213,11 +213,27 @@ public class ClientHandler implements Runnable{
         }
         
         // An unknown client message was received
-        else {
-            outgoing.println("Unknown command: " + fullMessage);
-        }
-    }
+
     
+    // handle the full game reset message
+    else if (fullMessage.contains("GAME_RESET_FULL")) {
+        String[] resetDetails = fullMessage.split("\\|");
+
+        // Potentially update local game state or trigger UI reset
+        server.broadcast("GAME_RESET_ACKNOWLEDGED|" + username + "|END|");
+    }
+
+    else if (fullMessage.contains("GAME_RESET_DETAILS")) {
+        // handle detailed reset information if needed
+        server.broadcast("RESET_DETAILS_ACKNOWLEDGED|" + username + "|END|");
+    }
+
+    // An unknown client message was received
+    else {
+        outgoing.println("Unknown command: " + fullMessage);
+    }
+}
+
     // This method receives the movement choice from the player, and updates
     // the game board accordingly. After the update, the server broadcasts the
     // change to all clients.

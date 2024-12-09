@@ -20,10 +20,8 @@ import tkm.clientserver.Server;
 import tkm.enums.CharacterType;
 import tkm.enums.RoomType;
 import tkm.enums.WeaponType;
-import tkm.gamelogic.Card;
 import tkm.gamelogic.Deck;
 import tkm.gamelogic.GamePiece;
-import tkm.gamelogic.MakeAccusation;
 import tkm.gamelogic.Player;
 import tkm.ui.CardPanel;
 import tkm.ui.ChatPanel;
@@ -163,8 +161,8 @@ public class Main extends JFrame {
         JTextField serverAddressField = new JTextField();
         JTextField portField = new JTextField(Integer.toString(Server.PORT));
         Object[] message = {
-                "Server Public IP Address: ", serverAddressField,
-                "Server Port: ", portField
+                "Server Public IP Address: ", serverAddressField
+                //"Server Port: ", portField
         };
 
         // Whether the user accepts or cancels joining the server.
@@ -384,53 +382,51 @@ public class Main extends JFrame {
         }
     }
 
-    // Action Listener for the Accusation button
-    private class AccusationActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            // Create dropdown lists for accusation selection
-            JComboBox<String> suspectList = new JComboBox<>();
-            for (CharacterType character : CharacterType.values()) {
-                suspectList.addItem(character.getName());
-            }
-
-            JComboBox<String> weaponList = new JComboBox<>();
-            for (WeaponType weapon : WeaponType.values()) {
-                weaponList.addItem(weapon.getName());
-            }
-
-            JComboBox<String> roomList = new JComboBox<>();
-            for (RoomType room : RoomType.values()) {
-                roomList.addItem(room.getName());
-            }
-
-            // Panel layout for accusation inputs
-            JPanel panel = new JPanel(new GridLayout(0, 1));
-            panel.add(new JLabel("Select suspect:"));
-            panel.add(suspectList);
-            panel.add(new JLabel("Select weapon:"));
-            panel.add(weaponList);
-            panel.add(new JLabel("Select room:"));
-            panel.add(roomList);
-
-            int result = JOptionPane.showConfirmDialog(null, panel, "Make an Accusation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-            if (result == JOptionPane.OK_OPTION) {
-                // Retrieve the selected values
-                String suspectName = (String) suspectList.getSelectedItem();
-                String weaponName = (String) weaponList.getSelectedItem();
-                String roomName = (String) roomList.getSelectedItem();
-
-                // Create accusation cards
-                Card suspect = new Card(suspectName, 1);
-                Card weapon = new Card(weaponName, 2);
-                Card room = new Card(roomName, 3);
-
-                // Make the accusation and display the result
-                MakeAccusation accusation = new MakeAccusation(currentPlayer, suspect, weapon, room);
-                accusation.performAccusation(murderDeck);
+        // Action Listener for the Accusation button
+        private class AccusationActionListener implements ActionListener {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Dropdowns for accusation selections
+                JComboBox<String> suspectList = new JComboBox<>();
+                for (CharacterType character : CharacterType.values()) {
+                    suspectList.addItem(character.getName());
+                }
+    
+                JComboBox<String> weaponList = new JComboBox<>();
+                for (WeaponType weapon : WeaponType.values()) {
+                    weaponList.addItem(weapon.getName());
+                }
+    
+                JComboBox<String> roomList = new JComboBox<>();
+                for (RoomType room : RoomType.values()) {
+                    roomList.addItem(room.getName());
+                }
+    
+                // Panel layout for accusation inputs
+                JPanel panel = new JPanel(new GridLayout(0, 1));
+                panel.add(new JLabel("Select suspect:"));
+                panel.add(suspectList);
+                panel.add(new JLabel("Select weapon:"));
+                panel.add(weaponList);
+                panel.add(new JLabel("Select room:"));
+                panel.add(roomList);
+    
+                int result = JOptionPane.showConfirmDialog(null, panel, "Make an Accusation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if (result == JOptionPane.OK_OPTION) {
+                    // Build the accusation message
+                    StringBuilder accusation = new StringBuilder("ACCUSATION: ");
+    
+                    // Get selected values
+                    accusation.append((String) suspectList.getSelectedItem()).append("|");
+                    accusation.append((String) weaponList.getSelectedItem()).append("|");
+                    accusation.append((String) roomList.getSelectedItem()).append("|");
+                    accusation.append("END|");
+    
+                    // Send the accusation message to the server
+                    gameClient.sendMessage(accusation.toString());
+                }
             }
         }
-    }
     
     // Action Listener for the End Turn button
     private class EndTurnActionListener implements ActionListener {

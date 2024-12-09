@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 
@@ -231,25 +232,34 @@ public class GameBoard {
                 player.getName() + " has made an incorrect accusation! They are now eliminated from the game!",
                 "Player Eliminated!",
                 JOptionPane.INFORMATION_MESSAGE);
+
+                handleAllPlayersEliminated();
     }
 
     private void handleAllPlayersEliminated() {
-        // Prepare the case file reveal message
-        String caseFileReveal = "CHAT: All players have been eliminated! The murder mystery remains unsolved! The case file reveals:\n" +
-                caseFileToString() + "|END|";
+        // Track eliminated players
+        boolean allPlayersEliminated = true;
+        for (Player player : players) {
+            if (!player.isEliminated()) {
+                allPlayersEliminated = false;
+                break;
+            }
+        }
 
-        // Broadcast the reveal to the chat panel
-        server.broadcast(caseFileReveal);
+        if (allPlayersEliminated) {
+            String caseFileReveal = "CHAT: All players have been eliminated! The murder mystery remains unsolved! The case file reveals:\n" +
+                    caseFileToString() + "|END|";
 
-        // Show the case file in a pop-up message to the host or all players
-        JOptionPane.showMessageDialog(null,
-                "The mystery remains unsolved! The case file reveals:\n\n" +
-                        caseFileToString(),
-                "Mystery Unsolved!",
-                JOptionPane.INFORMATION_MESSAGE);
+            // Broadcast the reveal to the chat panel
+            server.broadcast(caseFileReveal);
 
-        // End the game
-        server.getGameBoard().endGame();
+            JOptionPane.showMessageDialog(null,
+                    "The mystery remains unsolved! The case file reveals:\n\n" +
+                            caseFileToString(),
+                    "Mystery Unsolved!",
+                    JOptionPane.INFORMATION_MESSAGE);
+            server.getGameBoard().endGame();
+        }
     }
 
     public void endGame() {
@@ -299,7 +309,20 @@ public class GameBoard {
             return;
         }
 
-    
+            // Comprehensive reset broadcast
+        server.broadcast("GAME_RESET_FULL|" +
+                "Players=" + players.stream().map(Player::getName).collect(Collectors.joining(",")) + "|" +
+                "TileMap=" + stringTileMap() + "|" +
+                "END|");
+
+        // Detailed reset information
+        String resetMessage = "GAME_RESET_DETAILS: " +
+                "New Case File=" + this.caseFileToString() +
+                "|First Player=" + players.get(0).getName() +
+                "|END|";
+        server.broadcast(resetMessage);
+
+        // Reset game state while keeping players intact
         deck.clear();
         caseFile.clear();
         pieces.clear();
@@ -314,6 +337,7 @@ public class GameBoard {
         // Clear player hands but keep players
         for (Player player : players) {
             player.clearHand(); // Reset cards for each player
+            player.setEliminated(false); // Reset elimination status
         }
 
         // Shuffle the deck and set up the new game state
@@ -322,14 +346,32 @@ public class GameBoard {
         this.assignPlayerToGamePiece();
         this.dealCards();
 
+        // Broadcast piece and player information
+        server.broadcast("PIECES: " + stringPieces() + "|END|");
+        server.broadcast("GAMEBOARD: " + stringTileMap() + "|END|");
+
         // Broadcast the new game state to all connected clients
         if (server != null) {
             String solutionMessage = "CHAT: New case file: " + this.caseFileToString() + "|END|";
             server.broadcast(solutionMessage);
 
+            // Notify each player of their hand
+            for (Player player : players) {
+                ClientHandler clientHandler = playerClients.get(player);
+                if (clientHandler != null) {
+                    StringBuilder cardsMessage = new StringBuilder("PLAYER_CARDS:");
+                    for (Card card : player.getHand()) {
+                        cardsMessage.append(card.getName()).append("|");
+                    }
+                    cardsMessage.append("|END|");
+                    clientHandler.sendMessage(cardsMessage.toString());
+                }
+            }
+
             // Notify the first player it's their turn
             Player firstPlayer = players.get(0);
             server.broadcast("PLAYERS_TURN: " + firstPlayer.getName() + "|END|");
+            playerClients.get(firstPlayer).sendMessage("YOUR_TURN|END|");
         }
 
         System.out.println("Game restarted successfully.");
