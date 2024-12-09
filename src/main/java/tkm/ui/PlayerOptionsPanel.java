@@ -4,6 +4,7 @@ package tkm.ui;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
@@ -23,12 +24,13 @@ public class PlayerOptionsPanel extends JPanel {
     private JButton suggest;
     private JButton accuse;
     private JButton endTurn;
+    private JLabel character;
     
     public PlayerOptionsPanel() {
         this.initComponents();
         
         this.setLayout(new GridLayout(0, 1, 5, 5));
-        
+        //this.add(character);
         this.add(move);
         this.add(suggest);
         this.add(accuse);
@@ -36,6 +38,7 @@ public class PlayerOptionsPanel extends JPanel {
     }
     
     private void initComponents() {
+        //character = new JLabel("");
         move = new JButton("Move Character");
         suggest = new JButton("Make a Suggestion");
         accuse = new JButton("Make Accusation");
@@ -58,6 +61,10 @@ public class PlayerOptionsPanel extends JPanel {
     public JButton getEndTurnButton() {
         return endTurn;
     }
+
+    //public void setCharJLabel(String playerChar) {
+    //    character.setText(playerChar);
+    //}
     
     // This method is used to enable or disable the components. Used with player
     // turns to enable or disable the components. Should only enable when its 

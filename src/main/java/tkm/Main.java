@@ -23,6 +23,7 @@ import tkm.enums.WeaponType;
 import tkm.gamelogic.GamePiece;
 import tkm.gamelogic.Player;
 import tkm.ui.CardPanel;
+import tkm.ui.CharacterPanel;
 import tkm.ui.ChatPanel;
 import tkm.ui.GamePanel;
 import tkm.ui.MainMenu;
@@ -51,7 +52,9 @@ public class Main extends JFrame {
     private JPanel optionsPanel;
     private StartGamePanel startPanel;
     private CardPanel cardPanel;
-    
+    private CharacterPanel characterPanel;
+    //private CharacterType characterType;
+    //private String character;
     private String username;
     private Server gameServer;
     private Client gameClient;
@@ -68,6 +71,7 @@ public class Main extends JFrame {
         contentPanel = new JPanel();
         this.initializeComponents();
         currentRoom = new String();
+        //character = new String();
         // Initialize game components
         //murderDeck = new Deck(); // The solution deck for the game
         //currentPlayer = new Player("Player 1"); // Example current player
@@ -129,6 +133,10 @@ public class Main extends JFrame {
     public void setCurrentRoom(String room) {
         this.currentRoom = room;
     }
+
+    //public void setCharacter(String playerChar) {
+    //    this.character = playerChar;
+    //}
     // Host Game Button Action, sets up a server and a client for the host, and
     // should proceed to the game lobby or panel.
     private void hostGame(ActionEvent e) {
@@ -212,8 +220,14 @@ public class Main extends JFrame {
         this.switchToGamePanel();
         this.gameServer.getGameBoard().startGame();
         gameClient.sendMessage("REQUEST_HAND|END|");
+        gameClient.sendMessage("REQUEST_CHARACTER|END|");
+        //character = "TEST TEST";
+        //pOptionsPanel.setCharJLabel("character");
     }
 
+//    public void setCharLabelCardPanel(String character) {
+  //      cardPanel.setCharacter(character);
+    //}
     // Send Button Action, allows a user to send a message to the chat window
     private void send(ActionEvent e) {
 
@@ -231,7 +245,7 @@ public class Main extends JFrame {
     // move to the start of the game when the host starts. This method is called
     // when the server sends out the message.
     public void startGameForJoinedPlayers() {
-        if(gameClient.getHost() == false) {
+        if(gameClient.getHost() == false) {   
             SwingUtilities.invokeLater(() -> {
                 chatPanel.setVisible(true);
                 this.switchToPOPanel();
@@ -240,6 +254,7 @@ public class Main extends JFrame {
                 this.switchToGamePanel();
                 gamePanel.repaint();
                 gameClient.sendMessage("REQUEST_HAND|END|");
+                gameClient.sendMessage("REQUEST_CHARACTER|END|");
             });
         }
     }
@@ -270,6 +285,16 @@ public class Main extends JFrame {
         cardPanel = new CardPanel(cards);
         SwingUtilities.invokeLater(() -> {
             this.add(cardPanel, BorderLayout.SOUTH);
+            this.revalidate();
+            this.repaint();
+            this.pack();
+        });
+    }
+
+    public void createCharacterPanel(String character) {
+        characterPanel = new CharacterPanel(character);
+        SwingUtilities.invokeLater(() -> {
+            this.add(characterPanel, BorderLayout.WEST);
             this.revalidate();
             this.repaint();
             this.pack();
@@ -339,6 +364,12 @@ public class Main extends JFrame {
             }
         }
     }
+
+    public void resetUI() {
+        this.remove(cardPanel);
+        this.remove(characterPanel);
+        gameClient.sendMessage("REQUEST_CHARACTER|END|");
+    }
     
 
     // Action Listener for the Suggest button
@@ -383,8 +414,8 @@ public class Main extends JFrame {
                 suggestion.append((String) roomList.getSelectedItem()).append("|");
 
                 suggestion.append("|END|");
-                
                 gameClient.sendMessage(suggestion.toString());
+                pOptionsPanel.setMove(false);
             }
         }
     }

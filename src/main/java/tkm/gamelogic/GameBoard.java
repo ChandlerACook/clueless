@@ -283,6 +283,11 @@ public class GameBoard {
 
         // Handle user choice
         if (choice == 0) {  // Restart Game
+            server.broadcast("RESET_UI");
+
+
+
+
             restartGame();
         } else {  // Exit or closed dialog
             System.exit(0);

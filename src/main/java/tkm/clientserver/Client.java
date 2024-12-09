@@ -225,7 +225,17 @@ public class Client implements Runnable{
         else if(fullMessage.equals("SUGGEST_DISABLE")) {
             main.getOptionsPanel().setSuggest(false);
         }
+
+        else if(fullMessage.contains("PLAYER_CHARACTER")) {
+            //String character = fullMessage;
+            //main.setCharacter("TESTING TESTING");
+            String message = fullMessage.replace("PLAYER_CHARACTER", "").trim();
+            this.main.createCharacterPanel(message);
+        }
         
+        else if (fullMessage.contains("RESET_UI")) {
+            main.resetUI();
+        }
         // This server message is used to present the player with possible moves
         // when they click on the move button
         else if(fullMessage.startsWith("VALID_MOVES:")) {

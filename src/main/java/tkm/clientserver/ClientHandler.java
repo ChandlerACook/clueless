@@ -222,6 +222,7 @@ public class ClientHandler implements Runnable{
 
         // Potentially update local game state or trigger UI reset
         server.broadcast("GAME_RESET_ACKNOWLEDGED|" + username + "|END|");
+        server.broadcast("RESET_UI");
     }
 
     else if (fullMessage.contains("GAME_RESET_DETAILS")) {
@@ -229,6 +230,9 @@ public class ClientHandler implements Runnable{
         server.broadcast("RESET_DETAILS_ACKNOWLEDGED|" + username + "|END|");
     }
 
+ //   else if (fullMessage.contains("RESET_UI")) {
+ //       server.broadcast("RESET_UI");
+ //   }
     else if (fullMessage.contains("REQUEST_LOCATION")) {
         GamePiece piece = server.getGameBoard().getPlayerGamePiece(player);
         boolean inRoom = piece.getinRoom();
@@ -249,6 +253,14 @@ public class ClientHandler implements Runnable{
         int y = piece.getY();
         String message = "CURRENT_ROOM" + "|" + Integer.toString(x) + "|" + Integer.toString(y) + "|" + "|END|";
         server.getGameBoard().getCurrentClient().sendMessage(message);
+    }
+
+    else if(fullMessage.contains("REQUEST_CHARACTER")) {
+        //GamePiece piece = server.getGameBoard().getPlayerGamePiece(this.player);
+        //String character = piece.getCharacter().getName();
+        String character = player.getCharacter().getName();
+        //String character = "TEST TEST";
+        sendMessage("PLAYER_CHARACTER" + character + "|END|");
     }
     // An unknown client message was received
     else {
