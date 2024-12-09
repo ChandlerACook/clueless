@@ -160,6 +160,7 @@ public class ClientHandler implements Runnable{
             server.getGameBoard().handleSuggestion(suggestion, player);
             server.broadcast("PIECES: " + server.getGameBoard().stringPieces() + "|END|");
             server.broadcast("REDRAW|END|");
+            server.getGameBoard().getCurrentClient().sendMessage("SUGGEST_DISABLE|END|");
         }
 
         else if (fullMessage.contains("ACCUSATION:")) {
@@ -228,6 +229,19 @@ public class ClientHandler implements Runnable{
         server.broadcast("RESET_DETAILS_ACKNOWLEDGED|" + username + "|END|");
     }
 
+    else if (fullMessage.contains("REQUEST_LOCATION")) {
+        GamePiece piece = server.getGameBoard().getPlayerGamePiece(player);
+        boolean inRoom = piece.getinRoom();
+        String message = fullMessage.replace("|END|", "");
+
+        if (inRoom == false) {
+            message += "|" + "FALSE" + "|END|";
+            server.getGameBoard().getCurrentClient().sendMessage(message);
+        } else {
+            message += "|" + "TRUE" + "|END|";
+            server.getGameBoard().getCurrentClient().sendMessage(message);
+        }
+    }
     // An unknown client message was received
     else {
         outgoing.println("Unknown command: " + fullMessage);

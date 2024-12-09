@@ -9,7 +9,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.JOptionPane;
+
 import tkm.Main;
 import tkm.enums.CharacterType;
 import tkm.gamelogic.GamePiece;
@@ -129,8 +131,18 @@ public class Client implements Runnable{
         else if(fullMessage.contains("YOUR_TURN")) {
             JOptionPane.showMessageDialog(main, "It is your turn!");
             main.getOptionsPanel().enableSwitch(true);
+            sendMessage("REQUEST_LOCATION: " + "|END|");
         }
         
+        else if(fullMessage.contains("REQUEST_LOCATION")) {
+            String message = fullMessage.replace("REQUEST_LOCATION: ", "").trim();
+            if (fullMessage.contains("FALSE")) {
+                main.getOptionsPanel().setSuggest(false);
+            } else if (fullMessage.contains("TRUE")) {
+                main.getOptionsPanel().setSuggest(true);
+            }
+        }
+
         else if(fullMessage.contains("PLAYERS_TURN:")) {
             String username = fullMessage.replace("PLAYERS_TURN:", "").trim();
             JOptionPane.showMessageDialog(main, "It is " + username + "'s turn.");
@@ -208,6 +220,10 @@ public class Client implements Runnable{
             String[] cards = fullMessage.substring(13).split("\\|");
             main.createCardPanel(cards);
         }
+
+        else if(fullMessage.equals("SUGGEST_DISABLE")) {
+            main.getOptionsPanel().setSuggest(false);
+        }
         
         // This server message is used to present the player with possible moves
         // when they click on the move button
@@ -256,6 +272,8 @@ public class Client implements Runnable{
                         String originalCoordinate = entry.getKey();
                         // Send the original coordinate back to the server
                         sendMessage("MOVE: " + originalCoordinate + "|END|");
+                        main.getOptionsPanel().setMove(false);
+                        sendMessage("REQUEST_LOCATION: " + "|END|");
                         break;
                     }
                 }
@@ -267,6 +285,7 @@ public class Client implements Runnable{
             main.redrawGamePanel(pieces);
         }
     }
+
     
     // Returns a location name when given coordinates
     private String locationName(int[] location) {

@@ -2,6 +2,7 @@
 package tkm.ui;
 
 import java.awt.GridLayout;
+
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -66,5 +67,13 @@ public class PlayerOptionsPanel extends JPanel {
             suggest.setEnabled(activate);
             accuse.setEnabled(activate);
             endTurn.setEnabled(activate);
+    }
+
+    public void setMove(boolean activate) {
+        move.setEnabled(activate);
+    }
+
+    public void setSuggest(boolean activate) {
+        suggest.setEnabled(activate);
     }
 }

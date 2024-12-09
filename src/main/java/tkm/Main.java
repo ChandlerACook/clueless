@@ -269,6 +269,7 @@ public class Main extends JFrame {
             this.add(cardPanel, BorderLayout.SOUTH);
             this.revalidate();
             this.repaint();
+            this.pack();
         });
     }
 
@@ -310,6 +311,7 @@ public class Main extends JFrame {
         });
     }
     
+
     public PlayerOptionsPanel getOptionsPanel() {
         return this.pOptionsPanel;
     }

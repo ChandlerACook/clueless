@@ -2,6 +2,7 @@
 package tkm.gamelogic;
 
 import java.awt.Graphics;
+
 import tkm.enums.CharacterType;
 
 /**
@@ -19,6 +20,7 @@ public class GamePiece {
 
     private int x;
     private int y;
+    private boolean inRoom;
     //private final ImageIcon icon;
     private final CharacterType character;
     
@@ -40,12 +42,19 @@ public class GamePiece {
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
+
+
     }
     
 //    public ImageIcon getIcon() {
 //        return icon;
 //    }
-    
+    public void setInRoom(boolean activate) {
+        this.inRoom = activate;
+    }
+    public boolean getinRoom() {
+        return inRoom;
+    }
     public void draw(Graphics g) {
         g.setColor(character.getColor());
         g.fillOval(x * 30, y * 30, 30, 30); // Draw player as a circle with a size of 30x30 pixels

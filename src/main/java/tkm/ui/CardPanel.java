@@ -1,9 +1,10 @@
 
 package tkm.ui;
 
+import java.awt.GridLayout;
 import java.util.ArrayList;
+
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
@@ -26,7 +27,7 @@ public class CardPanel extends JPanel {
     }
     
     private void initComponents() {
-        this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        this.setLayout(new GridLayout(3, 5));
         this.setBorder(BorderFactory.createTitledBorder("Your Cards"));
         
         for(String card : hand) {

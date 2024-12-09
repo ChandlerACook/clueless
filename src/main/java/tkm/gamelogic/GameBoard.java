@@ -468,7 +468,7 @@ public class GameBoard {
     // CharacterType
     private void createGamePieces() {
         for(CharacterType character : CharacterType.values()) {
-            pieces.add(new GamePiece(character.getX(), character.getY(), character));
+            pieces.add(new GamePiece(character.getX(), character.getY(), character)); 
         }
     }
     
@@ -671,7 +671,14 @@ public class GameBoard {
         GamePiece piece = playerPieces.get(player);
         if (piece != null) {
             piece.setPosition(newX, newY);
+            if (TILEMAP[newY][newX] == 1) { // Player is in a hallway
+                piece.setInRoom(false);
+            } else if (TILEMAP[newY][newX] >= 3 && TILEMAP[newY][newX] <= 11) { // Player is in a room
+                piece.setInRoom(true);
+            }
         }
+
+        
     }
 
     // Method to validate a move before it's made, currently this is unused, I
